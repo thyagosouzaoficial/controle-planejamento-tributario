@@ -1,0 +1,61 @@
+LISTA DE EXEMPLO — empresas fictícias, para os testes rodarem em qualquer máquina
+
+..................................................................................................
+
+MUNICÍPIO: GOIANIA
+
+PADARIA MODELO LTDA
+
+11.222.333/0001-81
+
+Nome fantasia: PAO QUENTE
+
+Protocolo anterior: 000111/2021	-      1 processo quitado
+
+TEL.: (62) 3333-1111
+
+CEL.: (62) 99999-1111
+
+CEL.: (62) 99999-2222
+
+EMAIL.: contato@exemplo.com.br    financeiro@exemplo.com.br
+
+PROPRIETÁRIO (A): FULANO DE TAL // BELTRANA DE TAL
+
+..................................................................................................
+
+MUNICÍPIO: ANAPOLIS
+
+OFICINA EXEMPLO LTDA - VIP
+
+11.444.777/0001-61
+
+Nome fantasia: OFICINA EXEMPLO
+
+Protocolo anterior:
+
+TEL.:
+
+CEL.: (62) 98888-3333
+
+EMAIL.: oficina@exemplo.com.br
+
+PROPRIETÁRIO (A): CICLANO DE TAL
+
+..................................................................................................
+
+MUNICÍPIO: GOIANIA
+
+TRANSPORTES EXEMPLO LTDA
+
+11.555.888/0000-64
+
+Regime Tributário: LUCRO REAL
+
+Capital Social: 100.000,00
+
+Receita Bruta Anual: 1.250.000,00
+
+Data da Análise: 10/10/2025
+
+Responsável pela Análise: Equipe Analyze

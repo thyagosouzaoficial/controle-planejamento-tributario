@@ -1,0 +1,2548 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<style>
+  :root {
+    --tinta: #16202b;
+    --tinta-fraca: #5c6b7a;
+    --linha: #dfe5ec;
+    --fundo: #f4f6f9;
+    --papel: #ffffff;
+    --marca: #1b4d8f;
+    --marca-clara: #e8f0fb;
+    --atraso: #c0392b;
+    --atraso-fundo: #fdecea;
+    --semana: #a66300;
+    --semana-fundo: #fdf3e2;
+    --ok: #1d7a4c;
+    --ok-fundo: #e8f5ee;
+    --neutro-fundo: #eef1f5;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font: 14px/1.45 -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    color: var(--tinta);
+    background: var(--fundo);
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ---------- barra lateral ---------- */
+  .lateral {
+    width: 208px; flex: none; background: #14293f; color: #cfdcea;
+    display: flex; flex-direction: column; position: sticky; top: 0;
+    height: 100vh; overflow-y: auto;
+  }
+  .lateral .marca {
+    padding: 16px 18px 14px; border-bottom: 1px solid rgba(255,255,255,.1);
+  }
+  .lateral .marca b { display: block; color: #fff; font-size: 14px; font-weight: 650; line-height: 1.25; }
+  .lateral .marca span { font-size: 11.5px; color: #8ba6c4; }
+  .lateral nav { padding: 10px 10px 0; display: flex; flex-direction: column; gap: 2px; }
+  .lateral nav button {
+    display: flex; align-items: center; gap: 9px; width: 100%; text-align: left;
+    background: none; border: none; color: #cfdcea; padding: 8px 10px;
+    border-radius: 6px; font-size: 13.5px;
+  }
+  .lateral nav button:hover { background: rgba(255,255,255,.07); color: #fff; }
+  .lateral nav button.ativo { background: var(--marca); color: #fff; font-weight: 600; }
+  .lateral nav button .ic { width: 16px; text-align: center; flex: none; opacity: .9; }
+  .lateral nav button .conta {
+    margin-left: auto; font-size: 11px; font-variant-numeric: tabular-nums;
+    background: rgba(255,255,255,.12); border-radius: 10px; padding: 1px 7px;
+  }
+  .lateral .rodape {
+    margin-top: auto; padding: 14px 18px; font-size: 11px; color: #7f97b3;
+    border-top: 1px solid rgba(255,255,255,.1);
+  }
+  .conteudo { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+  .secao { display: none; }
+  .secao.ativa { display: block; }
+
+  button { font: inherit; cursor: pointer; }
+  input, select, textarea { font: inherit; color: inherit; }
+
+  /* ---------- cabeçalho ---------- */
+  header {
+    background: var(--papel);
+    border-bottom: 1px solid var(--linha);
+    padding: 14px 20px 0;
+    position: sticky; top: 0; z-index: 10;
+  }
+  .gaveta header { position: static; }
+  .titulo { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .titulo h1 { font-size: 17px; margin: 0; font-weight: 650; letter-spacing: -.2px; }
+  .titulo span { color: var(--tinta-fraca); font-size: 12.5px; }
+  .titulo .acoes { margin-left: auto; display: flex; gap: 8px; }
+
+  .btn {
+    border: 1px solid var(--linha); background: var(--papel); color: var(--tinta);
+    padding: 6px 12px; border-radius: 6px;
+  }
+  .btn:hover { background: var(--fundo); }
+  .btn-primario { background: var(--marca); border-color: var(--marca); color: #fff; }
+  .btn-primario:hover { background: #16407a; }
+
+  /* ---------- resumo ---------- */
+  .resumo { display: flex; gap: 10px; margin: 14px 0 12px; flex-wrap: wrap; }
+  .cartao {
+    border: 1px solid var(--linha); border-radius: 8px; padding: 9px 14px;
+    background: var(--papel); min-width: 108px; text-align: left;
+  }
+  .cartao b { display: block; font-size: 21px; font-weight: 650; line-height: 1.15; }
+  .cartao small { color: var(--tinta-fraca); font-size: 11.5px; text-transform: uppercase; letter-spacing: .4px; }
+  .cartao.ativo { border-color: var(--marca); box-shadow: inset 0 0 0 1px var(--marca); }
+  .resumo-servicos .cartao { min-width: 132px; }
+  .resumo-servicos .cartao b { font-size: 19px; }
+  .resumo-servicos .cartao small { text-transform: none; letter-spacing: 0; font-size: 12px; }
+  .resumo-servicos .cartao .detalhe {
+    display: block; font-size: 11px; color: #9aa7b4; padding-top: 2px;
+    font-variant-numeric: tabular-nums;
+  }
+  .resumo-servicos .cartao.sem b { color: var(--tinta-fraca); }
+  .cartao.atraso b { color: var(--atraso); }
+  .cartao.semana b { color: var(--semana); }
+  .cartao.ok b { color: var(--ok); }
+
+  /* ---------- filtros ---------- */
+  .filtros { display: flex; gap: 8px; align-items: center; padding-bottom: 12px; flex-wrap: wrap; }
+  .filtros input[type=search], .filtros select {
+    border: 1px solid var(--linha); border-radius: 6px; padding: 6px 9px; background: var(--papel);
+  }
+  .filtros input[type=search] { min-width: 260px; }
+  .contagem { color: var(--tinta-fraca); font-size: 12.5px; margin-left: auto; }
+  .legenda { display: flex; gap: 12px; align-items: center; color: var(--tinta-fraca);
+             font-size: 12px; margin-left: 6px; }
+  .legenda span { display: flex; gap: 5px; align-items: center; }
+  .legenda i { width: 13px; height: 13px; border-radius: 4px; border: 1px solid var(--linha);
+               background: var(--papel); display: block; }
+  .legenda i.feito { background: var(--ok-fundo); border-color: #a8d5bd; }
+  .legenda i.parcial { background: var(--semana-fundo); border-color: #e8c88a; }
+  .legenda i.atual { border-color: var(--marca); box-shadow: 0 0 0 2px var(--marca-clara); }
+
+  /* ---------- tabela ---------- */
+  .area { padding: 16px 20px 40px; }
+  table { width: 100%; border-collapse: collapse; background: var(--papel);
+          border: 1px solid var(--linha); border-radius: 8px; overflow: hidden; }
+  th {
+    text-align: left; font-size: 11.5px; text-transform: uppercase; letter-spacing: .4px;
+    color: var(--tinta-fraca); font-weight: 600; padding: 9px 12px;
+    border-bottom: 1px solid var(--linha); background: #fafbfc; white-space: nowrap;
+  }
+  td { padding: 10px 12px; border-bottom: 1px solid #eef1f5; vertical-align: middle; }
+  tbody tr { cursor: pointer; }
+  tbody tr:hover { background: var(--marca-clara); }
+  tbody tr:last-child td { border-bottom: none; }
+  .col-num { color: var(--tinta-fraca); width: 40px; font-variant-numeric: tabular-nums; }
+  .nome-empresa { font-weight: 600; }
+  .cnpj { font-variant-numeric: tabular-nums; }
+  .sem-valor { color: #9aa7b4; font-style: italic; }
+  .servico-vazio { white-space: nowrap; font-size: 12px; }
+  .etiqueta {
+    display: inline-block; font-size: 11.5px; font-weight: 600; white-space: nowrap;
+    background: var(--neutro-fundo); color: var(--tinta-fraca);
+    border-radius: 5px; padding: 2px 8px;
+  }
+  .aviso-faixa {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    margin: 0 20px 10px; padding: 9px 14px; border-radius: 8px;
+    background: var(--semana-fundo); border: 1px solid #f0dcb4;
+    color: var(--semana); font-size: 12.5px;
+  }
+  .aviso-faixa .btn { color: var(--tinta); }
+  .sugestao { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 2px; }
+  .sugestao button {
+    border: 1px dashed var(--linha); background: var(--papel); color: var(--marca);
+    border-radius: 5px; padding: 2px 8px; font-size: 12px; font-variant-numeric: tabular-nums;
+  }
+  .sugestao button:hover { border-style: solid; background: var(--marca-clara); }
+  .sub { color: var(--tinta-fraca); font-size: 12px; }
+
+  .pilula {
+    display: inline-block; padding: 2px 9px; border-radius: 20px;
+    font-size: 11.5px; font-weight: 600; white-space: nowrap;
+  }
+  .p-atrasado { background: var(--atraso-fundo); color: var(--atraso); }
+  .p-semana { background: var(--semana-fundo); color: var(--semana); }
+  .p-em_dia { background: var(--ok-fundo); color: var(--ok); }
+  .p-entregue { background: var(--ok-fundo); color: var(--ok); }
+  .p-entregue_atraso { background: var(--semana-fundo); color: var(--semana); }
+  .p-sem_prazo { background: var(--neutro-fundo); color: var(--tinta-fraca); }
+
+  .barra { height: 6px; background: var(--neutro-fundo); border-radius: 3px; width: 92px; overflow: hidden; }
+  .barra i { display: block; height: 100%; background: var(--marca); }
+  .barra.completa i { background: var(--ok); }
+  .pct { font-variant-numeric: tabular-nums; font-size: 12px; color: var(--tinta-fraca); }
+
+  /* checklist das 12 etapas, direto na lista */
+  .trilha { display: flex; gap: 2px; align-items: center; }
+  .marco {
+    width: 19px; height: 19px; padding: 0; border-radius: 5px;
+    border: 1px solid var(--linha); background: var(--papel);
+    color: var(--tinta-fraca); font-size: 10px; font-weight: 650;
+    display: flex; align-items: center; justify-content: center; flex: none;
+  }
+  .marco:hover { border-color: var(--marca); color: var(--marca); }
+  .marco.feito { background: var(--ok-fundo); border-color: #a8d5bd; color: var(--ok); }
+  .marco.parcial { background: var(--semana-fundo); border-color: #e8c88a; color: var(--semana); }
+  .marco.atual { border-color: var(--marca); color: var(--marca); box-shadow: 0 0 0 2px var(--marca-clara); }
+  .marco.salvando { opacity: .4; }
+  .marco.fora { background: #fafbfc; border-color: #eef1f5; color: #cdd5dd; }
+  .marco.na {
+    background: repeating-linear-gradient(-45deg, #f4f6f9, #f4f6f9 3px, #e6eaef 3px, #e6eaef 5px);
+    border-style: dashed; color: #aab4bf;
+  }
+  .trilha .pct { margin-left: 8px; min-width: 30px; text-align: right; }
+
+  /* siglas das etapas no cabeçalho, alinhadas coluna a coluna com os marcos */
+  .trilha-topo { display: flex; gap: 2px; align-items: flex-end; height: 62px; }
+  .trilha-topo span { width: 19px; height: 100%; position: relative; flex: none; }
+  .trilha-topo b {
+    position: absolute; bottom: 2px; left: 13px; transform-origin: left bottom;
+    transform: rotate(-58deg); white-space: nowrap;
+    font-size: 10px; font-weight: 650; letter-spacing: .3px; color: var(--tinta-fraca);
+  }
+
+  /* etapa atual: onde está, com quem, e há quanto tempo parada */
+  .etapa-atual { display: flex; gap: 7px; align-items: baseline; }
+  .etapa-atual .posicao {
+    font-variant-numeric: tabular-nums; font-size: 11px; font-weight: 650;
+    color: var(--marca); background: var(--marca-clara);
+    border-radius: 4px; padding: 1px 6px; flex: none;
+  }
+  .etapa-atual.pronta .posicao { color: var(--ok); background: var(--ok-fundo); }
+  .parada { font-weight: 600; }
+  .parada.morna { color: var(--semana); }
+  .parada.fria { color: var(--atraso); }
+
+  /* quantas empresas estão em cada etapa */
+  .funil { display: flex; flex-wrap: wrap; align-items: flex-start; align-content: flex-start; gap: 6px; padding: 0 0 12px; }
+  .passo {
+    display: flex; align-items: center; gap: 7px;
+    border: 1px solid var(--linha); background: var(--papel); border-radius: 7px;
+    padding: 4px 10px 4px 6px; color: var(--tinta-fraca); font-size: 11.5px;
+  }
+  .passo:hover { border-color: var(--marca); }
+  .passo.ativo { border-color: var(--marca); box-shadow: inset 0 0 0 1px var(--marca); }
+  .passo.apagado { opacity: .5; }
+  .passo b {
+    min-width: 22px; text-align: center; font-size: 13px; font-weight: 650; color: var(--tinta);
+    background: var(--neutro-fundo); border-radius: 5px; padding: 1px 5px;
+  }
+  .passo.cheio b { background: var(--marca-clara); color: var(--marca); }
+  .passo .sig { font-weight: 650; letter-spacing: .3px; }
+  .passo .nm { color: var(--tinta-fraca); }
+  .passo.fim b { background: var(--ok-fundo); color: var(--ok); }
+
+  th.ordenavel { cursor: pointer; user-select: none; }
+  th.ordenavel:hover { color: var(--marca); }
+  th .seta { color: var(--marca); font-size: 9px; margin-left: 3px; }
+
+  /* ---------- detalhe ---------- */
+  .cortina {
+    position: fixed; inset: 0; background: rgba(16, 26, 38, .45);
+    display: none; z-index: 50;
+  }
+  .cortina.aberta { display: block; }
+  .gaveta {
+    position: fixed; top: 0; right: 0; bottom: 0; width: min(880px, 100%);
+    background: var(--fundo); box-shadow: -4px 0 24px rgba(0,0,0,.18);
+    overflow-y: auto; transform: translateX(100%); transition: transform .18s ease;
+    z-index: 51;
+  }
+  .gaveta.aberta { transform: translateX(0); }
+  .gaveta header { padding: 16px 22px; }
+  .gaveta .corpo { padding: 18px 22px 60px; }
+
+  .bloco {
+    background: var(--papel); border: 1px solid var(--linha);
+    border-radius: 8px; padding: 16px 18px; margin-bottom: 14px;
+  }
+  .bloco h3 { margin: 0 0 12px; font-size: 12px; text-transform: uppercase;
+              letter-spacing: .5px; color: var(--tinta-fraca); font-weight: 650; }
+
+  .campos { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px 16px; }
+  .campo { display: flex; flex-direction: column; gap: 4px; }
+  .campo.largo { grid-column: 1 / -1; }
+  .campo label { font-size: 11.5px; color: var(--tinta-fraca); font-weight: 600; }
+  .campo input, .campo select, .campo textarea {
+    border: 1px solid var(--linha); border-radius: 6px; padding: 6px 9px; background: var(--papel);
+    width: 100%;
+  }
+  .campo textarea { min-height: 74px; resize: vertical; }
+  .campo input[type=checkbox] { width: auto; flex: none; }
+  .campo .marcador { display: flex; gap: 8px; align-items: center; font-weight: 400;
+                     border: 1px solid var(--linha); border-radius: 6px; padding: 6px 9px;
+                     background: var(--papel); cursor: pointer; }
+  .campo input:focus, .campo select:focus, .campo textarea:focus {
+    outline: 2px solid var(--marca); outline-offset: -1px; border-color: var(--marca);
+  }
+
+  /* ---------- etapas ---------- */
+  .etapa { border: 1px solid var(--linha); border-radius: 8px; background: var(--papel); margin-bottom: 8px; }
+  .etapa-topo {
+    display: flex; align-items: center; gap: 11px; padding: 11px 14px;
+  }
+  .etapa-topo .ordem {
+    width: 22px; height: 22px; border-radius: 50%; background: var(--neutro-fundo);
+    color: var(--tinta-fraca); font-size: 11.5px; font-weight: 650;
+    display: flex; align-items: center; justify-content: center; flex: none;
+  }
+  .etapa.feita .ordem { background: var(--ok-fundo); color: var(--ok); }
+  .etapa.feita .etapa-nome { color: var(--tinta-fraca); }
+  .etapa.fora { background: #fbfcfd; opacity: .75; }
+  .etapa.fora .etapa-nome { color: #9aa7b4; }
+  .etapa.na { background: #fbfcfd; }
+  .etapa.na .etapa-nome { color: #9aa7b4; text-decoration: line-through; }
+  .etapa.na .ordem { background: #f1f3f6; color: #aab4bf; }
+  .etiqueta-na {
+    font-size: 11px; font-weight: 600; color: var(--tinta-fraca);
+    background: var(--neutro-fundo); border-radius: 4px; padding: 2px 7px; white-space: nowrap;
+  }
+  .btn-na {
+    border: 1px solid var(--linha); background: var(--papel); color: var(--tinta-fraca);
+    border-radius: 5px; padding: 2px 8px; font-size: 11.5px; white-space: nowrap;
+  }
+  .btn-na:hover { border-color: var(--marca); color: var(--marca); }
+  .btn-na.ligado { border-color: var(--marca); color: var(--marca); background: var(--marca-clara); }
+  .etapa-nome { flex: 1; font-weight: 550; }
+  .etapa-topo input[type=checkbox] { width: 17px; height: 17px; cursor: pointer; flex: none; }
+  .etapa-topo button.expandir {
+    border: none; background: none; color: var(--tinta-fraca); padding: 2px 6px; font-size: 12px;
+  }
+  .etapa-detalhe { display: none; padding: 0 14px 14px 47px; border-top: 1px solid #eef1f5; padding-top: 12px; }
+  .etapa.expandida .etapa-detalhe { display: block; }
+
+  .docs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; margin-top: 12px; }
+  .doc { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; }
+  .doc input { margin-top: 2px; flex: none; }
+  .doc.entregue span { color: var(--tinta-fraca); text-decoration: line-through; }
+
+  .bloco.perigo { border-color: #f0c9c4; background: #fffafa; }
+  .bloco.perigo h3 { color: var(--atraso); }
+  .bloco.perigo p { margin: 0 0 12px; color: var(--tinta-fraca); font-size: 13px; }
+  .btn-perigo { background: var(--papel); border-color: #e3aaa3; color: var(--atraso); font-weight: 600; }
+  .btn-perigo:hover { background: var(--atraso-fundo); }
+  .btn-perigo[disabled] { opacity: .45; cursor: not-allowed; background: var(--papel); }
+  .confirma { display: flex; flex-direction: column; gap: 10px; }
+  .confirma input {
+    border: 1px solid #e3aaa3; border-radius: 6px; padding: 8px 10px;
+    background: var(--papel); max-width: 460px;
+  }
+  .confirma .linha-botoes { display: flex; gap: 8px; }
+
+  /* ---------- gráficos ---------- */
+  .viz {
+    --surface:     #ffffff;
+    --tinta-viz:   #16202b;
+    --tinta-2:     #5c6b7a;
+    --trilho:      #eef1f5;
+    --serie:       #2a78d6;
+    --serie-forte: #1c5cab;
+    --st-critico:  #d03b3b;
+    --st-alerta:   #fab219;
+    --st-bom:      #0ca30c;
+    --cinza-fraco: #9aa7b4;
+    --ord-1: #86b6ef; --ord-2: #5598e7; --ord-3: #2a78d6;
+    --ord-4: #1c5cab; --ord-5: #104281;
+  }
+
+  .paineis {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px; padding: 16px 20px 40px;
+  }
+  @media (max-width: 900px) { .paineis { grid-template-columns: 1fr; } }
+  .cartao-viz {
+    background: var(--papel); border: 1px solid var(--linha); border-radius: 8px;
+    padding: 15px 18px 12px;
+  }
+  .cartao-viz.largo { grid-column: 1 / -1; }
+  .grade-contida { display: contents; }
+  .cartao-viz h2 {
+    margin: 0; font-size: 13px; font-weight: 650; letter-spacing: -.1px;
+  }
+  .cartao-viz .legenda-viz {
+    margin: 2px 0 12px; color: var(--tinta-fraca); font-size: 12px;
+  }
+  .cartao-viz svg { display: block; width: 100%; overflow: visible; }
+
+  .barra-rotulo { font-size: 11.5px; fill: var(--tinta-2); }
+  .barra-valor { font-size: 11.5px; font-weight: 650; fill: var(--tinta-viz);
+                 font-variant-numeric: tabular-nums; }
+  .barra-valor.nulo { font-weight: 400; fill: #b3bdc7; }
+  .barra-trilho { fill: var(--trilho); }
+  .barra-alvo { cursor: pointer; fill: transparent; }
+  .barra-alvo:hover ~ .barra-marca, .barra-linha.ativa .barra-marca { filter: brightness(.9); }
+  .barra-linha.selecionada .barra-rotulo { fill: var(--marca); font-weight: 650; }
+
+  .dica {
+    position: fixed; z-index: 80; pointer-events: none; opacity: 0;
+    background: var(--tinta); color: #fff; border-radius: 6px; padding: 7px 10px;
+    font-size: 12px; line-height: 1.35; max-width: 260px;
+    box-shadow: 0 4px 14px rgba(0,0,0,.22); transition: opacity .1s;
+  }
+  .dica.visivel { opacity: 1; }
+  .dica b { display: block; font-size: 12.5px; margin-bottom: 2px; }
+  .dica span { color: #b9c6d4; }
+
+  .sem-dado { color: var(--tinta-fraca); font-size: 12.5px; padding: 18px 0; text-align: center; }
+
+  .tabela-viz { width: 100%; border-collapse: collapse; margin-top: 4px; }
+  .tabela-viz th, .tabela-viz td {
+    text-align: left; padding: 4px 8px 4px 0; font-size: 12px; border: none;
+    background: none; text-transform: none; letter-spacing: 0; color: var(--tinta);
+  }
+  .tabela-viz th { color: var(--tinta-fraca); font-weight: 600; }
+  .tabela-viz td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  details.dados { margin-top: 8px; }
+  details.dados summary {
+    cursor: pointer; color: var(--tinta-fraca); font-size: 11.5px; list-style: none;
+  }
+  details.dados summary::-webkit-details-marker { display: none; }
+  details.dados summary::before { content: '▸ '; }
+  details.dados[open] summary::before { content: '▾ '; }
+
+  .guia {
+    display: flex; flex-wrap: wrap; gap: 3px 16px; padding: 0 20px 12px;
+    color: var(--tinta-fraca); font-size: 11.5px;
+  }
+  .guia .rotulo { width: 100%; font-weight: 600; color: var(--tinta-fraca); padding-bottom: 1px; }
+  .guia span.item b { color: var(--tinta); font-weight: 650; }
+  .guia span.item { white-space: nowrap; }
+
+  .ativos { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 20px 4px; }
+  .ativos:empty { display: none; }
+  .ativos .chip {
+    display: flex; align-items: center; gap: 6px; font-size: 12px;
+    background: var(--marca-clara); color: var(--marca); border: 1px solid #c6dbf5;
+    border-radius: 20px; padding: 3px 6px 3px 11px;
+  }
+  .ativos .chip b { font-weight: 650; }
+  .ativos .chip button {
+    border: none; background: rgba(27,77,143,.12); color: var(--marca);
+    border-radius: 50%; width: 17px; height: 17px; line-height: 1; padding: 0; font-size: 12px;
+  }
+  .ativos .chip button:hover { background: var(--marca); color: #fff; }
+
+  .vazio { text-align: center; color: var(--tinta-fraca); padding: 50px 20px; }
+  .aviso {
+    position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
+    background: var(--tinta); color: #fff; padding: 9px 16px; border-radius: 6px;
+    font-size: 13px; opacity: 0; transition: opacity .18s; pointer-events: none; z-index: 90;
+  }
+  .aviso.visivel { opacity: 1; }
+  .aviso.erro { background: var(--atraso); }
+
+  .etapa-config { display: flex; align-items: center; gap: 10px; padding: 9px 0;
+                  border-bottom: 1px solid #eef1f5; }
+  .etapa-config:last-child { border-bottom: none; }
+  .etapa-config .ordem { width: 22px; height: 22px; border-radius: 50%; background: var(--neutro-fundo);
+    color: var(--tinta-fraca); font-size: 11.5px; font-weight: 650;
+    display: flex; align-items: center; justify-content: center; flex: none; }
+  .etapa-config .sigla {
+    font-size: 11px; font-weight: 650; letter-spacing: .3px; color: var(--tinta-fraca);
+    background: var(--neutro-fundo); border-radius: 4px; padding: 2px 7px; flex: none;
+  }
+  .etapa-config .nome { flex: 1; }
+  .etapa-config .acoes { display: flex; gap: 6px; flex: none; }
+  .etapa-config .servicos { display: flex; gap: 4px; flex-wrap: wrap; flex: none; max-width: 260px; }
+  .servico-tag {
+    font-size: 11px; font-weight: 600; border-radius: 4px; padding: 2px 7px; white-space: nowrap;
+    background: var(--marca-clara); color: var(--marca);
+  }
+  .servico-tag.todos { background: var(--neutro-fundo); color: var(--tinta-fraca); }
+  .matriz { width: 100%; border-collapse: collapse; }
+  .matriz th, .matriz td {
+    border: none; background: none; text-transform: none; letter-spacing: 0;
+    padding: 7px 8px; font-size: 13px; color: var(--tinta);
+    border-bottom: 1px solid #eef1f5; vertical-align: middle;
+  }
+  .matriz thead th {
+    font-size: 11.5px; color: var(--tinta-fraca); font-weight: 650; text-align: center;
+    border-bottom: 1px solid var(--linha); white-space: nowrap; padding-bottom: 9px;
+  }
+  .matriz thead th.etapa-col { text-align: left; width: 52%; }
+  .matriz td.marca, .matriz thead th:not(.etapa-col) { width: 1%; }
+  .matriz thead th button {
+    border: 1px solid var(--linha); background: var(--papel); color: var(--tinta-fraca);
+    border-radius: 5px; padding: 3px 9px; font-size: 11.5px; font-weight: 650;
+  }
+  .matriz thead th button:hover { border-color: var(--marca); color: var(--marca); }
+  .matriz thead th small { display: block; font-weight: 400; color: #9aa7b4; padding-top: 3px; }
+  .matriz tbody tr:last-child td { border-bottom: none; }
+  .matriz td.marca { text-align: center; }
+  .matriz td.marca input { width: 17px; height: 17px; cursor: pointer; }
+  .matriz td.acoes { text-align: right; white-space: nowrap; }
+  .matriz td.acoes .btn { padding: 3px 9px; font-size: 12px; }
+  .matriz .col-todos { background: #fafbfc; }
+  .matriz .nome-etapa { display: flex; align-items: center; gap: 8px; }
+  .matriz .nome-etapa .ordem, .matriz .nome-etapa .sigla { flex: none; }
+  .matriz tr.so-de-servico .texto { color: var(--marca); }
+
+  .escolha-servicos { display: flex; gap: 12px; flex-wrap: wrap; padding: 4px 0 2px; }
+  .escolha-servicos label { display: flex; gap: 6px; align-items: center; font-size: 12.5px; }
+  .escolha-servicos input { width: auto; }
+  .etapa-config .btn { padding: 4px 10px; font-size: 12.5px; }
+  .form-etapa { display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap; }
+  .form-etapa .campo { flex: 1; min-width: 200px; }
+  .form-etapa .campo.estreito { flex: none; width: 110px; }
+
+  .log-linha { display: grid; grid-template-columns: 120px 1fr; gap: 10px;
+               padding: 7px 0; border-bottom: 1px solid #eef1f5; font-size: 12.5px; }
+  .log-linha:last-child { border-bottom: none; }
+  .log-linha .quando { color: var(--tinta-fraca); font-variant-numeric: tabular-nums; }
+
+  @media (max-width: 1180px) {
+    .esconde-movel { display: none; }
+  }
+  @media (max-width: 720px) {
+    .campos, .docs { grid-template-columns: 1fr; }
+    .legenda { display: none; }
+  }
+</style>
+</head>
+<body class="viz">
+
+<aside class="lateral">
+  <div class="marca">
+    <b>Planejamento Tributário</b>
+    <span>Azuos · Analyze</span>
+  </div>
+  <nav>
+    <button id="nav-visao" class="ativo" onclick="irPara('visao')">
+      <span class="ic">◨</span> Visão geral</button>
+    <button id="nav-empresas" onclick="irPara('empresas')">
+      <span class="ic">▤</span> Empresas <span class="conta" id="contaLateral"></span></button>
+    <button onclick="abrirEtapas()"><span class="ic">☑</span> Etapas do checklist</button>
+    <button onclick="abrirCampos()"><span class="ic">▭</span> Campos por serviço</button>
+    <button onclick="abrirImportacao()"><span class="ic">⇩</span> Importar clientes</button>
+    <button onclick="abrirLog()"><span class="ic">◷</span> Histórico</button>
+  </nav>
+  <div class="rodape" id="rodapeLateral">carregando…</div>
+</aside>
+
+<div class="conteudo">
+
+  <header>
+    <div class="titulo">
+      <h1 id="tituloSecao">Visão geral</h1>
+      <span id="carimbo">carregando…</span>
+      <div class="acoes">
+        <button class="btn" onclick="exportarExcel()" id="btnExportar"
+          title="Baixa a lista em Excel, respeitando os filtros">Exportar Excel</button>
+        <button class="btn" onclick="carregar()">Atualizar</button>
+        <button class="btn btn-primario" onclick="novaEmpresa()">Nova empresa</button>
+      </div>
+    </div>
+    <div style="height:12px"></div>
+  </header>
+
+  <section class="secao ativa" id="secao-visao">
+    <div class="resumo" id="resumo" style="padding:16px 20px 0"></div>
+    <div class="resumo resumo-servicos" id="resumoServicos" style="padding:10px 20px 0"></div>
+    <div class="paineis">
+      <div class="cartao-viz">
+        <h2>Empresas por serviço</h2>
+        <div class="legenda-viz" id="sub-servicos"></div>
+        <div id="graficoServicos"></div>
+      </div>
+      <div class="cartao-viz">
+        <h2>Situação do prazo</h2>
+        <div class="legenda-viz" id="sub-prazo"></div>
+        <div id="graficoPrazo"></div>
+      </div>
+      <div class="cartao-viz largo">
+        <h2>Onde as empresas estão paradas</h2>
+        <div class="legenda-viz" id="sub-funil"></div>
+        <div id="graficoFunil"></div>
+      </div>
+      <div class="grade-contida" id="andamentoPorServico"></div>
+      <div class="cartao-viz">
+        <h2>Há quanto tempo sem andar</h2>
+        <div class="legenda-viz" id="sub-parada"></div>
+        <div id="graficoParada"></div>
+      </div>
+      <div class="cartao-viz">
+        <h2>Carga por responsável</h2>
+        <div class="legenda-viz" id="sub-carga"></div>
+        <div id="graficoCarga"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="secao" id="secao-empresas">
+    <div class="filtros" style="padding:14px 20px">
+      <input type="search" id="busca" placeholder="Buscar por empresa, CNPJ ou contato…" oninput="desenhar()">
+      <select id="filtroResponsavel" onchange="desenhar()"><option value="">Todos os responsáveis</option></select>
+      <select id="filtroServico" onchange="filtroServico=this.value; desenhar()"><option value="">Todos os serviços</option></select>
+      <select id="filtroRegime" onchange="desenhar()"><option value="">Todos os regimes</option></select>
+      <select id="ordem" onchange="ordemDesc=false; desenhar()">
+        <option value="prazo">Ordenar por prazo</option>
+        <option value="numero">Ordenar por nº</option>
+        <option value="nome">Ordenar por empresa</option>
+      <option value="servico">Ordenar por serviço</option>
+        <option value="regime">Ordenar por regime</option>
+        <option value="etapa">Ordenar por etapa</option>
+        <option value="progresso">Ordenar por progresso</option>
+        <option value="parada">Ordenar por tempo parado</option>
+      </select>
+      <button class="btn" onclick="renumerar()" title="Reescreve a coluna Nº de 1 em diante, na ordem em que as empresas estão na planilha">Renumerar</button>
+      <div class="legenda" title="As etapas de cada empresa, na coluna Checklist">
+        <span><i class="feito"></i> concluída</span>
+        <span><i class="parcial"></i> documentos em parte</span>
+        <span><i class="atual"></i> etapa da vez</span>
+      </div>
+      <span class="contagem" id="contagem"></span>
+    </div>
+
+    <div id="avisoServico"></div>
+
+    <div class="guia" id="guiaEtapas"></div>
+
+    <div class="ativos" id="filtrosAtivos"></div>
+
+    <div class="area">
+      <table>
+        <thead>
+          <tr>
+            <th class="col-num ordenavel" onclick="ordenarPor('numero')" id="th-numero">Nº</th>
+            <th class="ordenavel" onclick="ordenarPor('nome')" id="th-nome">Empresa</th>
+            <th class="esconde-movel ordenavel" onclick="ordenarPor('servico')" id="th-servico">Serviço</th>
+            <th class="esconde-movel ordenavel" onclick="ordenarPor('regime')" id="th-regime">Regime</th>
+            <th class="ordenavel" onclick="ordenarPor('etapa')" id="th-etapa">Em que etapa está</th>
+            <th id="thChecklist" class="ordenavel" onclick="ordenarPor('progresso')">Checklist</th>
+            <th class="ordenavel" onclick="ordenarPor('prazo')" id="th-prazo">Prazo</th>
+          </tr>
+        </thead>
+        <tbody id="corpo"></tbody>
+      </table>
+      <div class="vazio" id="vazio" style="display:none">Nenhuma empresa com esses filtros.</div>
+    </div>
+  </section>
+
+</div>
+
+<div class="dica" id="dica"></div>
+
+<div class="cortina" id="cortina" onclick="fecharGaveta()"></div>
+<div class="gaveta" id="gaveta"><div id="gavetaConteudo"></div></div>
+
+<div class="aviso" id="aviso"></div>
+
+<script>
+  var dados = { empresas: [], usuarios: [], regimes: [], hoje: '' };
+  var filtroStatus = '';
+  var filtroEtapa = '';
+  var filtroFaixa = '';
+  var filtroServico = '';
+  var filtroSemResponsavel = false;
+  var ordemDesc = false;
+  var empresaAberta = null;
+
+  var STATUS = {
+    atrasado: 'Atrasado',
+    semana: 'Vence em 7 dias',
+    em_dia: 'Em dia',
+    entregue: 'Entregue',
+    entregue_atraso: 'Entregue com atraso',
+    sem_prazo: 'Sem prazo'
+  };
+
+  /* ---------- utilidades ---------- */
+
+  function chamar(fn, args) {
+    return new Promise(function (ok, falha) {
+      google.script.run
+        .withSuccessHandler(ok)
+        .withFailureHandler(function (e) { falha(e); })
+        [fn].apply(null, args || []);
+    });
+  }
+
+  function avisar(texto, erro) {
+    var el = document.getElementById('aviso');
+    el.textContent = texto;
+    el.className = 'aviso visivel' + (erro ? ' erro' : '');
+    clearTimeout(el._t);
+    el._t = setTimeout(function () { el.className = 'aviso'; }, erro ? 5000 : 2200);
+  }
+
+  function escapar(t) {
+    return String(t == null ? '' : t).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+
+  function porExtenso(iso) {
+    if (!iso) return '—';
+    var p = iso.split('-');
+    return p[2] + '/' + p[1] + '/' + p[0];
+  }
+
+  function textoPrazo(e) {
+    if (e.status === 'entregue') return 'Entregue em ' + porExtenso(e.entregaEfetiva);
+    if (e.status === 'entregue_atraso') return 'Entregue com ' + e.diasAtraso + ' dia(s) de atraso';
+    if (e.status === 'sem_prazo') return 'Sem previsão';
+    var d = e.diasRestantes;
+    if (d < 0) return Math.abs(d) + ' dia(s) em atraso';
+    if (d === 0) return 'Vence hoje';
+    return 'Faltam ' + d + ' dia(s)';
+  }
+
+  /* ---------- carga ---------- */
+
+  function carregar() {
+    document.getElementById('carimbo').textContent = 'carregando…';
+    chamar('carregarPainel').then(function (d) {
+      dados = d;
+      montarCabecalhoDoChecklist();
+      preencherFiltros();
+      desenhar();
+      document.getElementById('carimbo').textContent =
+        dados.empresas.length + ' empresas · dados de ' + porExtenso(dados.hoje);
+      if (empresaAberta) {
+        var atual = dados.empresas.filter(function (e) { return e.linha === empresaAberta.linha; })[0];
+        if (atual) desenharGaveta(atual);
+      }
+    }).catch(function (e) {
+      avisar('Erro ao carregar: ' + e.message, true);
+      document.getElementById('carimbo').textContent = 'falha ao carregar';
+    });
+  }
+
+  /**
+   * O checklist é um só. Com um serviço escolhido no filtro, a tela mostra
+   * apenas as etapas daquele serviço — as comuns (sem serviço) entram sempre.
+   */
+  function etapasVisiveis() {
+    var todas = dados.etapas || [];
+    if (!filtroServico) return todas;
+    return todas.filter(function (et) {
+      return !et.servicos.length || et.servicos.indexOf(filtroServico) >= 0;
+    });
+  }
+
+  /** A régua das etapas: as siglas que ficam sobre os marcos do checklist. */
+  function montarCabecalhoDoChecklist() {
+    var etapas = etapasVisiveis();
+    if (!etapas.length) return;
+
+    document.getElementById('thChecklist').innerHTML =
+      '<div class="trilha-topo">' +
+        etapas.map(function (et) {
+          return '<span title="' + escapar(et.posicao + '. ' + et.nome) + '"><b>' +
+            escapar(et.sigla) + '</b></span>';
+        }).join('') +
+      '</div>';
+
+    document.getElementById('guiaEtapas').innerHTML =
+      '<span class="rotulo">O que é cada sigla do checklist' +
+        (filtroServico ? ' — etapas de ' + escapar(filtroServico) : '') + '</span>' +
+      etapas.map(function (et) {
+        return '<span class="item"><b>' + et.posicao + ' ' + escapar(et.sigla) + '</b> ' +
+          escapar(et.nome) + '</span>';
+      }).join('');
+  }
+
+  /* ------------------------------------------------------------------ *
+   * Gráficos                                                            *
+   * ------------------------------------------------------------------ */
+
+  var FAIXAS_PARADA = [
+    { chave: 'ate30', rotulo: 'até 30 dias', cor: 'var(--ord-1)', dentro: function (d) { return d !== null && d <= 30; } },
+    { chave: 'd31', rotulo: '31 a 60 dias', cor: 'var(--ord-2)', dentro: function (d) { return d !== null && d > 30 && d <= 60; } },
+    { chave: 'd61', rotulo: '61 a 90 dias', cor: 'var(--ord-3)', dentro: function (d) { return d !== null && d > 60 && d <= 90; } },
+    { chave: 'd90', rotulo: 'mais de 90 dias', cor: 'var(--ord-4)', dentro: function (d) { return d !== null && d > 90; } },
+    { chave: 'nunca', rotulo: 'nunca movimentada', cor: 'var(--ord-5)', dentro: function (d) { return d === null; } }
+  ];
+
+  var ESTADOS_PRAZO = [
+    { chave: 'atrasado', rotulo: 'Atrasado', cor: 'var(--st-critico)' },
+    { chave: 'semana', rotulo: 'Vence em até 7 dias', cor: 'var(--st-alerta)' },
+    { chave: 'em_dia', rotulo: 'Em dia', cor: 'var(--st-bom)' },
+    { chave: 'sem_prazo', rotulo: 'Sem previsão', cor: 'var(--cinza-fraco)' }
+  ];
+
+  /** A base de tudo já considera o serviço escolhido. */
+  function universo() {
+    if (!filtroServico) return dados.empresas;
+    return dados.empresas.filter(function (e) { return e.servico === filtroServico; });
+  }
+
+  function emAndamento() {
+    return universo().filter(function (e) {
+      return e.status !== 'entregue' && e.status !== 'entregue_atraso';
+    });
+  }
+
+  /**
+   * Barras horizontais: o comprimento carrega a magnitude, o rótulo fica à
+   * esquerda e o número na ponta, para a identidade nunca depender da cor.
+   */
+  function desenharBarras(idDestino, itens, opcoes) {
+    var destino = document.getElementById(idDestino);
+    if (!destino) return;
+    opcoes = opcoes || {};
+
+    if (!itens.length) {
+      destino.innerHTML = '<div class="sem-dado">Nada a mostrar aqui ainda.</div>';
+      return;
+    }
+
+    var largura = destino.clientWidth || 560;
+    var alturaLinha = opcoes.alturaLinha || 26;
+    var alturaBarra = 12;
+    var larguraRotulo = opcoes.larguraRotulo || 150;
+    var larguraValor = itens.some(function (i) { return i.textoValor; }) ? 62 : 34;
+    var inicio = larguraRotulo + 10;
+    var fim = Math.max(inicio + 40, largura - larguraValor);
+    var util = fim - inicio;
+    // com `total` por item a barra vira medidor: o trilho é o total daquela linha
+    var proporcional = itens.some(function (i) { return typeof i.total === 'number'; });
+    var maior = Math.max.apply(null, itens.map(function (i) { return i.valor; })) || 1;
+    var altura = itens.length * alturaLinha + 4;
+
+    var linhas = itens.map(function (item, i) {
+      var y = i * alturaLinha + 3;
+      var meio = y + alturaLinha / 2 - 3;
+      var base = proporcional ? (item.total || 0) : maior;
+      var fracao = base > 0 ? item.valor / base : 0;
+      var comprimento = item.valor > 0 ? Math.max(3, fracao * util) : 0;
+      var selecionada = opcoes.selecionada && opcoes.selecionada(item);
+
+      return '<g class="barra-linha' + (selecionada ? ' selecionada' : '') + '">' +
+        '<text class="barra-rotulo" x="' + larguraRotulo + '" y="' + (meio + 4) +
+          '" text-anchor="end">' + escapar(cortar(item.rotulo, opcoes.maxRotulo || 26)) + '</text>' +
+        '<rect class="barra-trilho" x="' + inicio + '" y="' + (meio - alturaBarra / 2) +
+          '" width="' + util + '" height="' + alturaBarra + '" rx="4"></rect>' +
+        (comprimento > 0
+          ? '<rect class="barra-marca" x="' + inicio + '" y="' + (meio - alturaBarra / 2) +
+            '" width="' + comprimento + '" height="' + alturaBarra + '" rx="4" fill="' + item.cor + '"></rect>'
+          : '') +
+        '<text class="barra-valor' + (item.valor ? '' : ' nulo') + '" x="' + (fim + 6) +
+          '" y="' + (meio + 4) + '">' + (item.textoValor || item.valor) + '</text>' +
+        '<rect class="barra-alvo" x="0" y="' + y + '" width="' + largura + '" height="' + (alturaLinha - 2) +
+          '" data-indice="' + i + '"></rect>' +
+        '</g>';
+    }).join('');
+
+    destino.innerHTML =
+      '<svg viewBox="0 0 ' + largura + ' ' + altura + '" width="' + largura + '" height="' + altura +
+      '" role="img" aria-label="' + escapar(opcoes.descricao || '') + '">' + linhas + '</svg>' +
+      tabelaDeDados(itens, opcoes);
+
+    destino.querySelectorAll('.barra-alvo').forEach(function (alvo) {
+      var item = itens[+alvo.getAttribute('data-indice')];
+      alvo.addEventListener('mousemove', function (ev) {
+        mostrarDica(ev, item.rotulo, item.detalhe || (item.valor + ' empresa(s)'));
+      });
+      alvo.addEventListener('mouseleave', esconderDica);
+      if (opcoes.aoClicar) {
+        alvo.addEventListener('click', function () { esconderDica(); opcoes.aoClicar(item); });
+      }
+    });
+  }
+
+  /** A mesma informação em texto — para quem não distingue as cores, e para conferir. */
+  function tabelaDeDados(itens, opcoes) {
+    return '<details class="dados"><summary>ver como tabela</summary>' +
+      '<table class="tabela-viz"><thead><tr><th>' + escapar(opcoes.colunaRotulo || 'Item') +
+      '</th><th class="num">Empresas</th></tr></thead><tbody>' +
+      itens.map(function (i) {
+        return '<tr><td>' + escapar(i.rotulo) + '</td><td class="num">' +
+          (i.textoValor || i.valor) + '</td></tr>';
+      }).join('') + '</tbody></table></details>';
+  }
+
+  function cortar(texto, limite) {
+    return texto.length > limite ? texto.slice(0, limite - 1) + '…' : texto;
+  }
+
+  function mostrarDica(ev, titulo, texto) {
+    var dica = document.getElementById('dica');
+    dica.innerHTML = '<b>' + escapar(titulo) + '</b><span>' + escapar(texto) + '</span>';
+    dica.classList.add('visivel');
+    var largura = dica.offsetWidth;
+    var x = Math.min(ev.clientX + 14, window.innerWidth - largura - 10);
+    dica.style.left = x + 'px';
+    dica.style.top = (ev.clientY + 16) + 'px';
+  }
+
+  function esconderDica() {
+    document.getElementById('dica').classList.remove('visivel');
+  }
+
+  function desenharGraficos() {
+    var abertas = emAndamento();
+
+    /* 1. onde as empresas estão paradas */
+    var porEtapa = {};
+    abertas.forEach(function (e) { porEtapa[e.etapaAtualId] = (porEtapa[e.etapaAtualId] || 0) + 1; });
+    var itensFunil = (dados.etapas || []).map(function (et) {
+      return {
+        chave: et.id, rotulo: et.posicao + '. ' + et.nome, valor: porEtapa[et.id] || 0,
+        cor: 'var(--serie)',
+        detalhe: (porEtapa[et.id] || 0) + ' de ' + abertas.length + ' em andamento · clique para ver a lista'
+      };
+    });
+    var semEtapa = abertas.filter(function (e) { return !e.etapaAtualId; }).length;
+    if (semEtapa) {
+      itensFunil.push({
+        chave: '__sem_etapa', rotulo: 'sem etapa a cumprir', valor: semEtapa,
+        cor: 'var(--cinza-fraco)',
+        detalhe: semEtapa + ' empresa(s) cujo serviço ainda não tem etapa definida'
+      });
+    }
+
+    document.getElementById('sub-funil').textContent =
+      abertas.length + ' empresas em andamento, na etapa em que cada uma parou' +
+      (semEtapa ? ' — ' + semEtapa + ' sem etapa definida no serviço' : '');
+    desenharBarras('graficoFunil', itensFunil, {
+      larguraRotulo: 230, maxRotulo: 38, colunaRotulo: 'Etapa',
+      descricao: 'Quantas empresas estão paradas em cada etapa',
+      selecionada: function (i) { return filtroEtapa === i.chave; },
+      aoClicar: function (i) { filtroEtapa = (filtroEtapa === i.chave) ? '' : i.chave; irPara('empresas'); }
+    });
+
+    /* 1b. empresas por serviço — sobre a carteira inteira, não só as em andamento */
+    var porServico = {};
+    dados.empresas.forEach(function (e) {
+      var nome = e.servico || 'sem serviço';
+      porServico[nome] = (porServico[nome] || 0) + 1;
+    });
+
+    var itensServico = (dados.servicos || []).map(function (nome) {
+      return { chave: nome, rotulo: nome, valor: porServico[nome] || 0, cor: 'var(--serie)',
+               detalhe: (porServico[nome] || 0) + ' empresa(s) · clique para ver a lista' };
+    });
+    if (porServico['sem serviço']) {
+      itensServico.push({ chave: '', rotulo: 'sem serviço', valor: porServico['sem serviço'],
+                          cor: 'var(--cinza-fraco)',
+                          detalhe: porServico['sem serviço'] + ' empresa(s) ainda sem serviço definido' });
+    }
+
+    document.getElementById('sub-servicos').textContent = filtroServico
+      ? 'mostrando só ' + filtroServico + ' — clique de novo para ver todos'
+      : dados.empresas.length + ' empresas na carteira, por serviço contratado';
+    desenharBarras('graficoServicos', itensServico, {
+      larguraRotulo: 150, maxRotulo: 26, colunaRotulo: 'Serviço',
+      descricao: 'Quantas empresas há em cada serviço',
+      selecionada: function (i) { return filtroServico === i.chave && i.chave !== ''; },
+      aoClicar: function (i) {
+        if (!i.chave) return;
+        filtroServico = (filtroServico === i.chave) ? '' : i.chave;
+        document.getElementById('filtroServico').value = filtroServico;
+        irPara('empresas');
+      }
+    });
+
+    /* 2. situação do prazo */
+    var itensPrazo = ESTADOS_PRAZO.map(function (st) {
+      var quantas = abertas.filter(function (e) { return e.status === st.chave; }).length;
+      return { chave: st.chave, rotulo: st.rotulo, valor: quantas, cor: st.cor,
+               detalhe: quantas + ' de ' + abertas.length + ' em andamento · clique para ver a lista' };
+    });
+    var atrasadas = itensPrazo[0].valor;
+    document.getElementById('sub-prazo').textContent = atrasadas
+      ? atrasadas + ' das ' + abertas.length + ' em andamento já passaram da previsão'
+      : 'nenhuma empresa em andamento está atrasada';
+    desenharBarras('graficoPrazo', itensPrazo, {
+      larguraRotulo: 128, colunaRotulo: 'Situação',
+      descricao: 'Situação de prazo das empresas em andamento',
+      selecionada: function (i) { return filtroStatus === i.chave; },
+      aoClicar: function (i) { filtroStatus = (filtroStatus === i.chave) ? '' : i.chave; irPara('empresas'); }
+    });
+
+    /* 2b. andamento das etapas, um quadro por serviço */
+    desenharAndamentoPorServico(abertas);
+
+    /* 3. há quanto tempo sem andar */
+    var itensParada = FAIXAS_PARADA.map(function (f) {
+      var quantas = abertas.filter(function (e) { return f.dentro(e.diasParada); }).length;
+      return { chave: f.chave, rotulo: f.rotulo, valor: quantas, cor: f.cor,
+               detalhe: quantas + ' empresa(s) · clique para ver a lista' };
+    });
+    var paradas = itensParada.slice(1).reduce(function (t, i) { return t + i.valor; }, 0);
+    document.getElementById('sub-parada').textContent =
+      paradas + ' sem nenhum registro há mais de 30 dias';
+    desenharBarras('graficoParada', itensParada, {
+      larguraRotulo: 128, colunaRotulo: 'Tempo parada',
+      descricao: 'Há quanto tempo cada empresa não registra movimento',
+      selecionada: function (i) { return filtroFaixa === i.chave; },
+      aoClicar: function (i) { filtroFaixa = (filtroFaixa === i.chave) ? '' : i.chave; irPara('empresas'); }
+    });
+
+    /* 4. carga por responsável */
+    var porPessoa = {};
+    abertas.forEach(function (e) {
+      var quem = e.responsavelAtual || 'sem responsável';
+      porPessoa[quem] = (porPessoa[quem] || 0) + 1;
+    });
+    var itensCarga = Object.keys(porPessoa)
+      .sort(function (a, b) { return porPessoa[b] - porPessoa[a]; })
+      .map(function (quem) {
+        return { chave: quem, rotulo: quem, valor: porPessoa[quem],
+                 cor: quem === 'sem responsável' ? 'var(--cinza-fraco)' : 'var(--serie)',
+                 detalhe: porPessoa[quem] + ' empresa(s) esperando por ' + quem };
+      });
+    var semDono = porPessoa['sem responsável'] || 0;
+    document.getElementById('sub-carga').textContent =
+      'empresas esperando cada pessoa na etapa atual' +
+      (semDono ? ' — ' + semDono + ' sem ninguém designado' : '');
+    desenharBarras('graficoCarga', itensCarga, {
+      larguraRotulo: 180, maxRotulo: 30, colunaRotulo: 'Responsável',
+      descricao: 'Quantas empresas esperam cada responsável',
+      selecionada: function (i) {
+        return i.chave !== 'sem responsável' &&
+          document.getElementById('filtroResponsavel').value === i.chave;
+      },
+      aoClicar: function (i) {
+        if (i.chave === 'sem responsável') { filtroSemResponsavel = !filtroSemResponsavel; }
+        else {
+          var seletor = document.getElementById('filtroResponsavel');
+          seletor.value = seletor.value === i.chave ? '' : i.chave;
+          filtroSemResponsavel = false;
+        }
+        irPara('empresas');
+      }
+    });
+  }
+
+  /**
+   * O andamento etapa a etapa, separado por serviço: cada serviço tem o seu
+   * fluxo, e misturar tudo num quadro só faria a conta de um diluir a do outro.
+   */
+  function desenharAndamentoPorServico(abertas) {
+    var area = document.getElementById('andamentoPorServico');
+    var etapas = dados.etapas || [];
+
+    var grupos = (dados.servicos || []).map(function (nome) {
+      return { nome: nome, empresas: abertas.filter(function (e) { return e.servico === nome; }) };
+    });
+
+    var semServico = abertas.filter(function (e) { return !e.servico; });
+    if (semServico.length) {
+      // empresa sem serviço conta todas as etapas — é assim que o cálculo do
+      // percentual trata o caso, e o quadro precisa dizer a mesma coisa
+      grupos.push({ nome: 'Sem serviço definido', empresas: semServico, todasAsEtapas: true });
+    }
+
+    var comEmpresas = grupos.filter(function (g) {
+      return g.empresas.length && (!filtroServico || g.nome === filtroServico);
+    });
+
+    if (!comEmpresas.length) {
+      area.innerHTML = '<div class="cartao-viz largo"><h2>Andamento de cada etapa</h2>' +
+        '<div class="sem-dado">Nenhuma empresa em andamento com esses filtros.</div></div>';
+      return;
+    }
+
+    area.innerHTML = comEmpresas.map(function (grupo, i) {
+      return '<div class="cartao-viz largo">' +
+        '<h2>Andamento — ' + escapar(grupo.nome) + '</h2>' +
+        '<div class="legenda-viz" id="sub-andamento-' + i + '"></div>' +
+        '<div id="graficoAndamento-' + i + '"></div></div>';
+    }).join('');
+
+    comEmpresas.forEach(function (grupo, i) {
+      var doGrupo = grupo.todasAsEtapas ? etapas : etapas.filter(function (et) {
+        return !et.servicos.length || et.servicos.indexOf(grupo.nome) >= 0;
+      });
+
+      var itens = doGrupo.map(function (et) {
+        var aplicaveis = 0;
+        var concluidas = 0;
+        grupo.empresas.forEach(function (e) {
+          var etapa = e.etapas.filter(function (x) { return x.id === et.id; })[0];
+          if (!etapa || etapa.foraDoServico || etapa.naoSeAplica) return;
+          aplicaveis++;
+          if (etapa.concluido) concluidas++;
+        });
+        return {
+          chave: et.id,
+          rotulo: et.posicao + '. ' + et.nome,
+          valor: concluidas, total: aplicaveis, cor: 'var(--serie)',
+          textoValor: concluidas + '/' + aplicaveis,
+          detalhe: aplicaveis
+            ? concluidas + ' de ' + aplicaveis + ' empresas de ' + grupo.nome + ' já cumpriram esta etapa'
+            : 'nenhuma empresa deste serviço precisa desta etapa'
+        };
+      });
+
+      var feitas = itens.reduce(function (t, x) { return t + x.valor; }, 0);
+      var previstas = itens.reduce(function (t, x) { return t + x.total; }, 0);
+      document.getElementById('sub-andamento-' + i).textContent =
+        grupo.empresas.length + ' empresa(s) em andamento · ' +
+        (previstas ? Math.round((feitas / previstas) * 100) + '% do caminho já percorrido'
+                   : 'sem etapas a cumprir');
+
+      if (!itens.length) {
+        document.getElementById('graficoAndamento-' + i).innerHTML =
+          '<div class="sem-dado">Nenhuma etapa foi marcada para ' + escapar(grupo.nome) +
+          ' ainda — defina em <b>Etapas do checklist</b>.</div>';
+        return;
+      }
+
+      desenharBarras('graficoAndamento-' + i, itens, {
+        larguraRotulo: 230, maxRotulo: 38, colunaRotulo: 'Etapa',
+        descricao: 'Andamento das etapas em ' + grupo.nome,
+        selecionada: function (x) { return filtroEtapa === x.chave; },
+        aoClicar: function (x) {
+          filtroEtapa = (filtroEtapa === x.chave) ? '' : x.chave;
+          if (grupo.nome !== 'Sem serviço definido') {
+            filtroServico = grupo.nome;
+            document.getElementById('filtroServico').value = filtroServico;
+          }
+          irPara('empresas');
+        }
+      });
+    });
+  }
+
+  /* ---------- navegação ---------- */
+
+  function irPara(secao) {
+    ['visao', 'empresas'].forEach(function (nome) {
+      var el = document.getElementById('secao-' + nome);
+      var botao = document.getElementById('nav-' + nome);
+      if (el) el.classList.toggle('ativa', nome === secao);
+      if (botao) botao.classList.toggle('ativo', nome === secao);
+    });
+    document.getElementById('tituloSecao').textContent =
+      secao === 'visao' ? 'Visão geral' : 'Empresas';
+    desenhar();
+    window.scrollTo(0, 0);
+  }
+
+  /* ---------- filtros ativos ---------- */
+
+  function desenharAvisoServico() {
+    var faltando = dados.empresas.filter(function (e) { return !e.servico; });
+    var area = document.getElementById('avisoServico');
+    if (!faltando.length || !(dados.servicos || []).length) { area.innerHTML = ''; return; }
+
+    area.innerHTML = '<div class="aviso-faixa">' +
+      '<span><b>' + faltando.length + '</b> empresa(s) ainda sem serviço definido.</span>' +
+      '<span>Marcar todas como</span>' +
+      '<select id="servicoEmMassa">' +
+        (dados.servicos || []).map(function (n) {
+          return '<option value="' + escapar(n) + '">' + escapar(n) + '</option>';
+        }).join('') +
+      '</select>' +
+      '<button class="btn" onclick="preencherServicoEmMassa()">Aplicar</button>' +
+      '</div>';
+  }
+
+  function preencherServicoEmMassa() {
+    var servico = document.getElementById('servicoEmMassa').value;
+    var faltando = dados.empresas.filter(function (e) { return !e.servico; }).length;
+    if (!confirm('Marcar ' + faltando + ' empresa(s) sem serviço como "' + servico +
+                 '"? Quem já tem serviço não é alterado.')) return;
+
+    avisar('Preenchendo…');
+    chamar('definirServicoDasSemServico', [servico])
+      .then(function (painel) { aplicarPainel(painel, faltando + ' empresa(s) marcadas como ' + servico); })
+      .catch(function (erro) { avisar('Não preencheu: ' + erro.message, true); });
+  }
+
+  function desenharFiltrosAtivos() {
+    var chips = [];
+    var etapa = (dados.etapas || []).filter(function (e) { return e.id === filtroEtapa; })[0];
+    if (etapa) chips.push(['etapa', 'Etapa', etapa.nome]);
+    else if (filtroEtapa === '__sem_etapa') chips.push(['etapa', 'Etapa', 'sem etapa a cumprir']);
+    if (filtroStatus) {
+      var st = ESTADOS_PRAZO.filter(function (e) { return e.chave === filtroStatus; })[0];
+      chips.push(['status', 'Situação', st ? st.rotulo : rotuloDeStatus(filtroStatus)]);
+    }
+    if (filtroFaixa) {
+      var fx = FAIXAS_PARADA.filter(function (f) { return f.chave === filtroFaixa; })[0];
+      chips.push(['faixa', 'Parada', fx ? fx.rotulo : filtroFaixa]);
+    }
+    if (filtroSemResponsavel) chips.push(['semdono', 'Responsável', 'sem ninguém designado']);
+    var resp = document.getElementById('filtroResponsavel').value;
+    if (resp) chips.push(['responsavel', 'Responsável', resp]);
+    if (filtroServico) chips.push(['servico', 'Serviço', filtroServico]);
+    var regime = document.getElementById('filtroRegime').value;
+    if (regime) chips.push(['regime', 'Regime', regime]);
+    var busca = document.getElementById('busca').value.trim();
+    if (busca) chips.push(['busca', 'Busca', busca]);
+
+    document.getElementById('filtrosAtivos').innerHTML = chips.map(function (c) {
+      return '<span class="chip"><b>' + c[1] + ':</b> ' + escapar(c[2]) +
+        '<button type="button" title="Tirar este filtro" onclick="limparFiltro(\'' + c[0] + '\')">×</button></span>';
+    }).join('') + (chips.length > 1
+      ? '<span class="chip" style="background:none;border-color:var(--linha);color:var(--tinta-fraca)">' +
+        '<button type="button" onclick="limparFiltro(\'tudo\')" ' +
+        'style="background:none;width:auto;border-radius:12px;padding:0 6px">limpar tudo</button></span>'
+      : '');
+  }
+
+  function rotuloDeStatus(chave) {
+    return { aberto: 'em andamento', entregue: 'entregues', parada: 'paradas há +30 dias' }[chave] || chave;
+  }
+
+  function limparFiltro(qual) {
+    if (qual === 'etapa' || qual === 'tudo') filtroEtapa = '';
+    if (qual === 'status' || qual === 'tudo') filtroStatus = '';
+    if (qual === 'faixa' || qual === 'tudo') filtroFaixa = '';
+    if (qual === 'semdono' || qual === 'tudo') filtroSemResponsavel = false;
+    if (qual === 'responsavel' || qual === 'tudo') document.getElementById('filtroResponsavel').value = '';
+    if (qual === 'servico' || qual === 'tudo') {
+      filtroServico = '';
+      document.getElementById('filtroServico').value = '';
+    }
+    if (qual === 'regime' || qual === 'tudo') document.getElementById('filtroRegime').value = '';
+    if (qual === 'busca' || qual === 'tudo') document.getElementById('busca').value = '';
+    desenhar();
+  }
+
+  function preencherFiltros() {
+    var resp = document.getElementById('filtroResponsavel');
+    var nomes = {};
+    dados.empresas.forEach(function (e) {
+      e.etapas.forEach(function (et) { if (et.responsavel) nomes[et.responsavel] = 1; });
+    });
+    (dados.usuarios || []).forEach(function (u) { nomes[u] = 1; });
+    resp.innerHTML = '<option value="">Todos os responsáveis</option>' +
+      Object.keys(nomes).sort().map(function (n) {
+        return '<option value="' + escapar(n) + '">' + escapar(n) + '</option>';
+      }).join('');
+
+    var serv = document.getElementById('filtroServico');
+    serv.innerHTML = '<option value="">Todos os serviços</option>' +
+      (dados.servicos || []).map(function (n) {
+        return '<option value="' + escapar(n) + '"' + (n === filtroServico ? ' selected' : '') +
+          '>' + escapar(n) + '</option>';
+      }).join('');
+    if (filtroServico && (dados.servicos || []).indexOf(filtroServico) < 0) filtroServico = '';
+
+    var reg = document.getElementById('filtroRegime');
+    var regimes = {};
+    dados.empresas.forEach(function (e) { if (e.regime) regimes[e.regime] = 1; });
+    reg.innerHTML = '<option value="">Todos os regimes</option>' +
+      Object.keys(regimes).sort().map(function (n) {
+        return '<option value="' + escapar(n) + '">' + escapar(n) + '</option>';
+      }).join('');
+  }
+
+  /* ---------- painel ---------- */
+
+  function entregueAgora(e) {
+    return e.status === 'entregue' || e.status === 'entregue_atraso';
+  }
+
+  function filtradas() {
+    var busca = document.getElementById('busca').value.trim().toLowerCase();
+    var resp = document.getElementById('filtroResponsavel').value;
+    var regime = document.getElementById('filtroRegime').value;
+
+    var numeros = busca.replace(/[^0-9a-z]/g, '');
+    var lista = universo().filter(function (e) {
+      if (busca) {
+        var achou = e.nome.toLowerCase().indexOf(busca) >= 0 ||
+          String(e.contato).toLowerCase().indexOf(busca) >= 0;
+        if (!achou && numeros) {
+          achou = (e.cnpjs || []).some(function (c) {
+            return c.numero.toLowerCase().indexOf(numeros) >= 0;
+          });
+        }
+        if (!achou) return false;
+      }
+      if (regime && e.regime !== regime) return false;
+      if (resp) {
+        var tem = e.etapas.some(function (et) {
+          return et.responsavel && et.responsavel.indexOf(resp) >= 0 && !et.concluido;
+        });
+        if (!tem) return false;
+      }
+      var entregue = e.status === 'entregue' || e.status === 'entregue_atraso';
+      if (filtroStatus === 'aberto' && entregue) return false;
+      else if (filtroStatus === 'entregue' && !entregue) return false;
+      else if (filtroStatus && filtroStatus !== 'aberto' && filtroStatus !== 'entregue' &&
+               filtroStatus !== 'parada' && e.status !== filtroStatus) return false;
+
+      if (filtroFaixa) {
+        if (entregue) return false;
+        var faixa = FAIXAS_PARADA.filter(function (f) { return f.chave === filtroFaixa; })[0];
+        if (faixa && !faixa.dentro(e.diasParada)) return false;
+      }
+      if (filtroSemResponsavel && (entregue || e.responsavelAtual)) return false;
+      if (filtroEtapa === '__entregues') {
+        if (e.status !== 'entregue' && e.status !== 'entregue_atraso') return false;
+      } else if (filtroEtapa === '__sem_etapa') {
+        if (e.etapaAtualId || entregueAgora(e)) return false;
+      } else if (filtroEtapa) {
+        if (e.etapaAtualId !== filtroEtapa) return false;
+        if (entregueAgora(e)) return false;
+      }
+      if (filtroStatus === 'parada') {
+        if (e.status === 'entregue' || e.status === 'entregue_atraso') return false;
+        if (e.diasParada !== null && e.diasParada <= 30) return false;
+      }
+      return true;
+    });
+
+    var ordem = document.getElementById('ordem').value;
+    var peso = { atrasado: 0, semana: 1, em_dia: 2, sem_prazo: 3, entregue_atraso: 4, entregue: 5 };
+
+    lista.sort(function (a, b) {
+      var r;
+      if (ordem === 'nome') {
+        r = a.nome.localeCompare(b.nome, 'pt-BR');
+      } else if (ordem === 'numero') {
+        r = (parseInt(a.numero, 10) || 0) - (parseInt(b.numero, 10) || 0);
+      } else if (ordem === 'servico') {
+        r = String(a.servico).localeCompare(String(b.servico), 'pt-BR');
+      } else if (ordem === 'regime') {
+        r = String(a.regime).localeCompare(String(b.regime), 'pt-BR');
+      } else if (ordem === 'etapa') {
+        r = a.etapaAtualPosicao - b.etapaAtualPosicao;
+      } else if (ordem === 'progresso') {
+        r = b.progresso - a.progresso;
+      } else if (ordem === 'parada') {
+        r = (b.diasParada === null ? 1e6 : b.diasParada) - (a.diasParada === null ? 1e6 : a.diasParada);
+      } else {
+        r = peso[a.status] - peso[b.status];
+        if (r === 0) r = (a.previsaoEntrega || '9999').localeCompare(b.previsaoEntrega || '9999');
+      }
+      if (r === 0) r = a.nome.localeCompare(b.nome, 'pt-BR');
+      return ordemDesc ? -r : r;
+    });
+    return lista;
+  }
+
+  function desenharResumo() {
+    var e = universo();
+    var conta = function (f) { return e.filter(f).length; };
+    var abertas = e.filter(function (x) { return x.status !== 'entregue' && x.status !== 'entregue_atraso'; });
+    var media = e.length ? e.reduce(function (s, x) { return s + x.progresso; }, 0) / e.length : 0;
+
+    var cartoes = [
+      { chave: '', rotulo: 'Total', valor: e.length, classe: '' },
+      { chave: 'aberto', rotulo: 'Em andamento', valor: abertas.length, classe: '' },
+      { chave: 'atrasado', rotulo: 'Atrasados', valor: conta(function (x) { return x.status === 'atrasado'; }), classe: 'atraso' },
+      { chave: 'semana', rotulo: 'Vencem em 7 dias', valor: conta(function (x) { return x.status === 'semana'; }), classe: 'semana' },
+      { chave: 'parada', rotulo: 'Paradas há +30 dias', valor: abertas.filter(function (x) {
+          return x.diasParada === null || x.diasParada > 30; }).length, classe: 'semana' },
+      { chave: 'entregue', rotulo: 'Entregues', valor: conta(function (x) { return x.status === 'entregue' || x.status === 'entregue_atraso'; }), classe: 'ok' }
+    ];
+
+    document.getElementById('resumo').innerHTML = cartoes.map(function (c) {
+      return '<button class="cartao ' + c.classe + (filtroStatus === c.chave ? ' ativo' : '') +
+        '" onclick="filtrarStatus(\'' + c.chave + '\')"><b>' + c.valor + '</b><small>' + c.rotulo + '</small></button>';
+    }).join('') +
+      '<div class="cartao"><b>' + Math.round(media * 100) + '%</b><small>Progresso médio</small></div>';
+  }
+
+  /** Uma fileira de cartões, um por serviço, com quantas empresas e quantas em andamento. */
+  function desenharResumoDeServicos() {
+    var area = document.getElementById('resumoServicos');
+    var servicos = (dados.servicos || []).slice();
+
+    var semServico = dados.empresas.filter(function (e) { return !e.servico; }).length;
+    var cartoes = servicos.map(function (nome) {
+      var daquele = dados.empresas.filter(function (e) { return e.servico === nome; });
+      var andando = daquele.filter(function (e) {
+        return e.status !== 'entregue' && e.status !== 'entregue_atraso';
+      }).length;
+      return '<button class="cartao' + (filtroServico === nome ? ' ativo' : '') +
+        '" onclick="filtrarServicoPeloCartao(\'' + escapar(nome) + '\')" title="' +
+        escapar('Ver só as empresas de ' + nome) + '">' +
+        '<b>' + daquele.length + '</b><small>' + escapar(nome) + '</small>' +
+        '<span class="detalhe">' + andando + ' em andamento</span></button>';
+    });
+
+    if (semServico) {
+      cartoes.push('<div class="cartao sem" title="Empresas ainda sem serviço definido">' +
+        '<b>' + semServico + '</b><small>sem serviço</small>' +
+        '<span class="detalhe">a definir</span></div>');
+    }
+
+    area.innerHTML = cartoes.join('');
+  }
+
+  function filtrarServicoPeloCartao(nome) {
+    filtroServico = (filtroServico === nome) ? '' : nome;
+    document.getElementById('filtroServico').value = filtroServico;
+    desenhar();
+  }
+
+  function filtrarStatus(chave) {
+    filtroStatus = (filtroStatus === chave) ? '' : chave;
+    desenhar();
+  }
+
+  /**
+   * O checklist das 12 etapas na própria lista: um marco por etapa, clicável.
+   * O marco 1 (documentação) não se marca daqui — são 10 documentos, então ele
+   * abre a ficha da empresa já na lista deles.
+   */
+  function desenharTrilha(e) {
+    // a etapa da vez é a primeira que ainda cabe fazer — pular o que não se aplica
+    var pendente = e.etapas.filter(function (et) {
+      return !et.concluido && !et.naoSeAplica && !et.foraDoServico;
+    })[0];
+
+    var visiveis = {};
+    etapasVisiveis().forEach(function (et) { visiveis[et.id] = true; });
+
+    var marcos = e.etapas.filter(function (et) { return visiveis[et.id]; }).map(function (et) {
+      var i = et.posicao - 1;
+      var classes = ['marco'];
+      var dica = (i + 1) + '. ' + et.nome;
+
+      if (et.foraDoServico) {
+        classes.push('fora');
+      } else if (et.naoSeAplica) {
+        classes.push('na');
+      } else if (et.documentos) {
+        var entregues = et.documentos.filter(function (d) { return d.entregue; }).length;
+        dica += ' — ' + entregues + ' de ' + et.documentos.length + ' documentos';
+        if (et.concluido) classes.push('feito');
+        else if (entregues > 0) classes.push('parcial');
+      } else if (et.concluido) {
+        classes.push('feito');
+      }
+
+      if (pendente && pendente.id === et.id) classes.push('atual');
+      if (et.responsavel) dica += ' — ' + et.responsavel;
+      if (et.data) dica += ' — ' + porExtenso(et.data);
+      dica += et.foraDoServico
+        ? ' — não faz parte do serviço ' + (e.servico || '(sem serviço)') + ', fora da conta'
+        : (et.naoSeAplica ? ' — NÃO SE APLICA a esta empresa (fora da conta do percentual)'
+          : (et.concluido ? ' — concluída' : ' — pendente'));
+
+      var acao = et.foraDoServico
+        ? 'abrirEmpresaDoMarco(event, ' + e.linha + ')'
+        : (et.documentos
+          ? 'abrirDocumentos(event, ' + e.linha + ')'
+          : 'marcarDaLista(event, ' + e.linha + ', \'' + et.id + '\', ' + (!et.concluido) + ')');
+
+      return '<button type="button" class="' + classes.join(' ') + '" title="' + escapar(dica) +
+        '" onclick="' + acao + '">' + (i + 1) + '</button>';
+    }).join('');
+
+    return '<div class="trilha">' + marcos +
+      '<span class="pct">' + Math.round(e.progresso * 100) + '%</span></div>';
+  }
+
+  /** O CNPJ como aparece na lista: o principal, e quantos mais o grupo tem. */
+  function rotuloCNPJ(e) {
+    if (e.cnpjs && e.cnpjs.length) {
+      var extras = e.cnpjs.length - 1;
+      return '<span class="cnpj">' + escapar(e.cnpjs[0].formatado) + '</span>' +
+        (extras > 0 ? ' <span class="sub">+' + extras + '</span>' : '');
+    }
+    return '<span class="cnpj sem-valor">CNPJ não informado</span>';
+  }
+
+  /** Em que etapa a empresa está, com quem, e há quanto tempo não anda. */
+  function desenharEtapaAtual(e) {
+    var pronta = e.etapaAtual === 'Concluído';
+    var total = (dados.etapas || []).length || 12;
+
+    var rodape = [];
+    if (e.responsavelAtual) rodape.push(escapar(e.responsavelAtual));
+    else if (!pronta) rodape.push('sem responsável');
+
+    if (!pronta && e.status !== 'entregue' && e.status !== 'entregue_atraso') {
+      if (e.diasParada === null) {
+        rodape.push('<span class="parada fria">nunca movimentada</span>');
+      } else {
+        var classe = e.diasParada > 60 ? ' fria' : (e.diasParada > 30 ? ' morna' : '');
+        var texto = e.diasParada === 0 ? 'movimentada hoje'
+          : 'parada há ' + e.diasParada + ' dia' + (e.diasParada > 1 ? 's' : '');
+        rodape.push('<span class="parada' + classe + '">' + texto + '</span>');
+      }
+    }
+
+    return '<div class="etapa-atual' + (pronta ? ' pronta' : '') + '">' +
+        '<span class="posicao">' + e.etapaAtualPosicao + '/' + total + '</span>' +
+        '<span>' + escapar(e.etapaAtual) + '</span>' +
+      '</div>' +
+      (rodape.length ? '<div class="sub">' + rodape.join(' · ') + '</div>' : '');
+  }
+
+  /** Marca ou desmarca uma etapa sem abrir a ficha da empresa. */
+  function marcarDaLista(evento, linha, etapaId, concluido) {
+    evento.stopPropagation();
+    var botao = evento.currentTarget;
+    if (botao.classList.contains('salvando')) return;
+    botao.classList.add('salvando');
+
+    chamar('alternarEtapa', [linha, etapaId, concluido])
+      .then(aplicarRetorno)
+      .catch(erroAoSalvar);
+  }
+
+  /** Etapa de outro serviço não se marca pela lista: abre a ficha para entender. */
+  function abrirEmpresaDoMarco(evento, linha) {
+    evento.stopPropagation();
+    abrirEmpresa(linha);
+  }
+
+  /** O marco dos documentos abre a ficha já com a lista aberta. */
+  function abrirDocumentos(evento, linha) {
+    evento.stopPropagation();
+    abrirEmpresa(linha);
+    var bloco = document.getElementById('etapa-documentacao');
+    if (bloco) bloco.classList.add('expandida');
+  }
+
+  /** Clicar no cabeçalho classifica por aquela coluna; clicar de novo inverte. */
+  function ordenarPor(chave) {
+    var seletor = document.getElementById('ordem');
+    if (seletor.value === chave) ordemDesc = !ordemDesc;
+    else { seletor.value = chave; ordemDesc = false; }
+    desenhar();
+  }
+
+  function marcarCabecalhoOrdenado() {
+    var chave = document.getElementById('ordem').value;
+    ['numero', 'nome', 'servico', 'regime', 'etapa', 'prazo'].forEach(function (c) {
+      var th = document.getElementById('th-' + c);
+      if (th) th.innerHTML = th.textContent.replace(/[▲▼]\s*$/, '').trim() +
+        (chave === c ? ' <span class="seta">' + (ordemDesc ? '▼' : '▲') + '</span>' : '');
+    });
+  }
+
+  /**
+   * Baixa a lista em Excel. Leva o que está filtrado na tela — e, na Visão
+   * geral, a carteira inteira. O arquivo vem do Google, é .xlsx de verdade.
+   */
+  function exportarExcel() {
+    var botao = document.getElementById('btnExportar');
+    var rotulo = botao.textContent;
+    botao.disabled = true;
+    botao.textContent = 'Gerando…';
+
+    var visiveis = document.getElementById('secao-empresas').classList.contains('ativa')
+      ? filtradas().map(function (e) { return e.linha; })
+      : [];
+
+    chamar('exportarParaExcel', [visiveis]).then(function (arquivo) {
+      baixarArquivo(arquivo.nome, arquivo.conteudo);
+      avisar(arquivo.quantas + ' empresa(s) exportadas para ' + arquivo.nome);
+      botao.disabled = false;
+      botao.textContent = rotulo;
+    }).catch(function (erro) {
+      avisar('Não exportou: ' + (erro && erro.message ? erro.message : erro), true);
+      botao.disabled = false;
+      botao.textContent = rotulo;
+    });
+  }
+
+  /** Transforma o conteúdo que veio do servidor num download do navegador. */
+  function baixarArquivo(nome, base64) {
+    var binario = atob(base64);
+    var bytes = new Uint8Array(binario.length);
+    for (var i = 0; i < binario.length; i++) bytes[i] = binario.charCodeAt(i);
+
+    var blob = new Blob([bytes], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    });
+    var url = URL.createObjectURL(blob);
+    var link = document.createElement('a');
+    link.href = url;
+    link.download = nome;
+    link.id = 'linkDownload';
+    document.body.appendChild(link);
+    link.click();
+
+    setTimeout(function () {
+      URL.revokeObjectURL(url);
+      if (link.parentNode) link.parentNode.removeChild(link);
+    }, 4000);
+  }
+
+  function renumerar() {
+    avisar('Renumerando…');
+    chamar('renumerarEmpresas')
+      .then(function (painel) { aplicarPainel(painel, 'Empresas renumeradas de 1 em diante'); })
+      .catch(function (erro) { avisar('Não renumerou: ' + erro.message, true); });
+  }
+
+  function desenhar() {
+    montarCabecalhoDoChecklist();
+    desenharResumo();
+    desenharResumoDeServicos();
+    desenharAvisoServico();
+    desenharFiltrosAtivos();
+    marcarCabecalhoOrdenado();
+    if (document.getElementById('secao-visao').classList.contains('ativa')) desenharGraficos();
+    var lista = filtradas();
+    document.getElementById('contagem').textContent =
+      lista.length + ' de ' + universo().length + ' empresas';
+    document.getElementById('contaLateral').textContent = dados.empresas.length;
+    document.getElementById('rodapeLateral').textContent =
+      'dados de ' + porExtenso(dados.hoje) + ' · a planilha é a fonte';
+    document.getElementById('vazio').style.display = lista.length ? 'none' : 'block';
+
+    document.getElementById('corpo').innerHTML = lista.map(function (e) {
+      var pct = Math.round(e.progresso * 100);
+      return '<tr onclick="abrirEmpresa(' + e.linha + ')">' +
+        '<td class="col-num">' + escapar(e.numero) + '</td>' +
+        '<td><div class="nome-empresa">' + escapar(e.nome) + '</div>' +
+          '<div class="sub">' + rotuloCNPJ(e) +
+          (e.contato ? ' · ' + escapar(e.contato) : '') + '</div></td>' +
+        '<td class="esconde-movel">' + (e.servico
+          ? '<span class="etiqueta">' + escapar(e.servico) + '</span>'
+          : '<span class="sem-valor servico-vazio">sem serviço</span>') + '</td>' +
+        '<td class="esconde-movel"><span class="sub">' + escapar(e.regime || '—') + '</span></td>' +
+        '<td>' + desenharEtapaAtual(e) + '</td>' +
+        '<td>' + desenharTrilha(e) + '</td>' +
+        '<td><span class="pilula p-' + e.status + '">' + textoPrazo(e) + '</span>' +
+          (e.previsaoEntrega && !e.entregaEfetiva ? '<div class="sub">prev. ' + porExtenso(e.previsaoEntrega) + '</div>' : '') +
+        '</td></tr>';
+    }).join('');
+  }
+
+  /* ---------- gaveta de detalhe ---------- */
+
+  function abrirEmpresa(linha) {
+    var e = dados.empresas.filter(function (x) { return x.linha === linha; })[0];
+    if (!e) return;
+    empresaAberta = e;
+    desenharGaveta(e);
+    document.getElementById('cortina').classList.add('aberta');
+    document.getElementById('gaveta').classList.add('aberta');
+  }
+
+  function fecharGaveta() {
+    empresaAberta = null;
+    document.getElementById('cortina').classList.remove('aberta');
+    document.getElementById('gaveta').classList.remove('aberta');
+  }
+
+  function opcoesUsuario(atual) {
+    var nomes = (dados.usuarios || []).slice();
+    if (atual && nomes.indexOf(atual) < 0) nomes.push(atual);
+    return '<option value=""></option>' + nomes.map(function (n) {
+      return '<option value="' + escapar(n) + '"' + (n === atual ? ' selected' : '') + '>' + escapar(n) + '</option>';
+    }).join('');
+  }
+
+  function desenharGaveta(e) {
+    empresaAberta = e;
+    var pct = Math.round(e.progresso * 100);
+
+    var cabecalho =
+      '<header><div class="titulo">' +
+        '<h1>' + escapar(e.nome) + '</h1>' +
+        '<span class="pilula p-' + e.status + '">' + textoPrazo(e) + '</span>' +
+        '<div class="acoes"><button class="btn" onclick="fecharGaveta()">Fechar</button></div>' +
+      '</div><div class="sub" style="padding-bottom:12px">Linha ' + e.linha +
+        ' da planilha · ' + pct + '% de ' + e.etapasAplicaveis + ' etapa(s) que se aplicam' +
+        (e.etapasNaoAplicaveis
+          ? ' · ' + e.etapasNaoAplicaveis + ' fora da conta'
+          : '') +
+        '</div></header>';
+
+    var campos =
+      '<div class="bloco"><h3>Contrato e prazo</h3><div class="campos">' +
+        campoServico(e) +
+        campoTexto('Número na lista', 'numero', e.numero) +
+        campoCNPJ(e) +
+        campoTexto('Responsável do cliente', 'contato', e.contato) +
+        campoSelect('Regime tributário', 'regime', e.regime, dados.regimes) +
+        campoData('Data do contrato', 'dataContrato', e.dataContrato) +
+        campoTexto('Prazo combinado', 'prazoCombinado', e.prazoCombinado) +
+        campoData('Previsão de entrega', 'previsaoEntrega', e.previsaoEntrega) +
+        campoData('Entrega efetiva', 'entregaEfetiva', e.entregaEfetiva) +
+        '<div class="campo"><label>Contrato assinado</label>' +
+          '<label class="marcador"><input type="checkbox"' + (e.assinatura ? ' checked' : '') +
+          ' onchange="salvarCabecalho(\'assinatura\', this.checked)"> Assinado</label></div>' +
+        '<div class="campo largo"><label>Observações do cliente</label>' +
+          '<textarea onblur="salvarCabecalho(\'observacao\', this.value)">' + escapar(e.observacao) + '</textarea></div>' +
+      '</div></div>';
+
+    var extras = camposDaEmpresa(e);
+    var blocoCampos = extras.length
+      ? '<div class="bloco"><h3>' +
+          (e.servico ? 'Informações de ' + escapar(e.servico) : 'Informações do serviço') +
+          '</h3><div class="campos">' +
+          extras.map(function (c) { return campoDoServico(c); }).join('') +
+        '</div></div>'
+      : '';
+
+    var etapas = '<div class="bloco"><h3>Etapas do planejamento</h3>' +
+      e.etapas.map(function (et, i) { return desenharEtapa(et, i); }).join('') + '</div>';
+
+    var exclusao =
+      '<div class="bloco perigo"><h3>Excluir empresa</h3>' +
+        '<p>Apaga a linha inteira da planilha, com todas as etapas e datas. Antes de apagar, ' +
+        'tudo é copiado para a aba <b>Excluidas</b>, com a data e quem excluiu — dá para ' +
+        'recuperar de lá.</p>' +
+        '<div id="areaExclusao">' +
+          '<button class="btn btn-perigo" onclick="pedirExclusao()">Excluir esta empresa</button>' +
+        '</div>' +
+      '</div>';
+
+    document.getElementById('gavetaConteudo').innerHTML =
+      cabecalho + '<div class="corpo">' + campos + blocoCampos + etapas + exclusao + '</div>';
+  }
+
+  function campoTexto(rotulo, campo, valor) {
+    return '<div class="campo"><label>' + rotulo + '</label>' +
+      '<input type="text" value="' + escapar(valor) + '" onblur="salvarCabecalho(\'' + campo + '\', this.value)"></div>';
+  }
+
+  /** Os campos que valem para esta empresa: os do serviço dela, mais os comuns. */
+  function camposDaEmpresa(e) {
+    return (e.campos || []).filter(function (c) {
+      return !c.servico || c.servico === e.servico;
+    });
+  }
+
+  /** Cada tipo de campo vira o controle certo — data é date, lista é select. */
+  function campoDoServico(c) {
+    var grava = 'salvarCampoExtra(\'' + c.id + '\', this';
+    var classe = (c.tipo === 'texto longo') ? ' largo' : '';
+    var corpo;
+
+    if (c.tipo === 'lista') {
+      corpo = '<select onchange="' + grava + '.value)"><option value="">—</option>' +
+        c.opcoes.map(function (o) {
+          return '<option value="' + escapar(o) + '"' + (o === c.valor ? ' selected' : '') +
+            '>' + escapar(o) + '</option>';
+        }).join('') + '</select>';
+    } else if (c.tipo === 'texto longo') {
+      corpo = '<textarea onblur="' + grava + '.value)">' + escapar(c.valor) + '</textarea>';
+    } else if (c.tipo === 'data') {
+      corpo = '<input type="date" value="' + escapar(c.valor) + '" onchange="' + grava + '.value)">';
+    } else if (c.tipo === 'sim/não') {
+      corpo = '<label class="marcador"><input type="checkbox"' + (c.valor === true ? ' checked' : '') +
+        ' onchange="' + grava + '.checked)"> Sim</label>';
+    } else if (c.tipo === 'número' || c.tipo === 'dinheiro') {
+      corpo = '<input type="text" inputmode="decimal" value="' + escapar(c.valor) +
+        '" placeholder="' + (c.tipo === 'dinheiro' ? 'R$ 0,00' : '0') +
+        '" onblur="' + grava + '.value)">';
+    } else {
+      corpo = '<input type="text" value="' + escapar(c.valor) + '" onblur="' + grava + '.value)">';
+    }
+
+    return '<div class="campo' + classe + '"><label>' + escapar(c.rotulo) + '</label>' + corpo + '</div>';
+  }
+
+  function salvarCampoExtra(campoId, valor) {
+    if (!empresaAberta) return;
+    chamar('salvarCampoDoServico', [empresaAberta.linha, campoId, valor])
+      .then(aplicarRetorno).catch(erroAoSalvar);
+  }
+
+  function campoServico(e) {
+    var lista = (dados.servicos || []).slice();
+    if (e.servico && lista.indexOf(e.servico) < 0) lista.push(e.servico);
+    return '<div class="campo"><label>Serviço contratado</label>' +
+      '<select onchange="escolherServico(this)">' +
+        '<option value="">—</option>' +
+        lista.map(function (n) {
+          return '<option value="' + escapar(n) + '"' + (n === e.servico ? ' selected' : '') +
+            '>' + escapar(n) + '</option>';
+        }).join('') +
+        '<option value="__novo">+ novo serviço…</option>' +
+      '</select></div>';
+  }
+
+  /** O "+ novo serviço" cria na lista e já aplica na empresa aberta. */
+  function escolherServico(seletor) {
+    if (seletor.value !== '__novo') { salvarCabecalho('servico', seletor.value); return; }
+
+    var nome = prompt('Nome do serviço novo:');
+    if (!nome || !nome.trim()) { if (empresaAberta) desenharGaveta(empresaAberta); return; }
+
+    chamar('criarServico', [nome])
+      .then(function (painel) {
+        dados.servicos = painel.servicos;
+        salvarCabecalho('servico', nome.trim());
+      })
+      .catch(function (erro) {
+        avisar('Não criou: ' + erro.message, true);
+        if (empresaAberta) desenharGaveta(empresaAberta);
+      });
+  }
+
+  function campoCNPJ(e) {
+    var valor = (e.cnpjs || []).map(function (c) { return c.formatado; }).join(', ');
+    var sugestao = '';
+
+    if (e.cnpjSugerido && e.cnpjSugerido.length) {
+      sugestao = '<div class="sugestao"><span class="sub">achei na observação:</span>' +
+        e.cnpjSugerido.map(function (c) {
+          return '<button type="button" onclick="usarCNPJ(\'' + c.formatado + '\')">' +
+            escapar(c.formatado) + '</button>';
+        }).join('') + '</div>';
+    }
+
+    return '<div class="campo"><label>CNPJ' +
+      ((e.cnpjs || []).length > 1 ? ' (' + e.cnpjs.length + ' no grupo)' : '') + '</label>' +
+      '<input type="text" id="campoCNPJ" value="' + escapar(valor) + '" ' +
+      'placeholder="00.000.000/0000-00 — separe por vírgula se for mais de um" ' +
+      'onblur="salvarCabecalho(\'cnpj\', this.value)"></div>' + sugestao;
+  }
+
+  /** Aceita um CNPJ sugerido, somando aos que já estiverem no campo. */
+  function usarCNPJ(formatado) {
+    var campo = document.getElementById('campoCNPJ');
+    var atual = campo.value.trim();
+    campo.value = atual ? atual + ', ' + formatado : formatado;
+    salvarCabecalho('cnpj', campo.value);
+  }
+
+  function campoData(rotulo, campo, valor) {
+    return '<div class="campo"><label>' + rotulo + '</label>' +
+      '<input type="date" value="' + escapar(valor) + '" onchange="salvarCabecalho(\'' + campo + '\', this.value)"></div>';
+  }
+
+  function campoSelect(rotulo, campo, valor, opcoes) {
+    var lista = (opcoes || []).slice();
+    if (valor && lista.indexOf(valor) < 0) lista.push(valor);
+    return '<div class="campo"><label>' + rotulo + '</label><select onchange="salvarCabecalho(\'' + campo + '\', this.value)">' +
+      '<option value=""></option>' +
+      lista.map(function (o) {
+        return '<option value="' + escapar(o) + '"' + (o === valor ? ' selected' : '') + '>' + escapar(o) + '</option>';
+      }).join('') + '</select></div>';
+  }
+
+  function desenharEtapa(et, i) {
+    var detalhe =
+      '<div class="campos">' +
+        '<div class="campo"><label>Responsável</label>' +
+          '<select onchange="salvarEtapa(\'' + et.id + '\', \'responsavel\', this.value)">' +
+          opcoesUsuario(et.responsavel) + '</select></div>' +
+        '<div class="campo"><label>' + escapar(et.rotuloData) + '</label>' +
+          '<input type="date" value="' + escapar(et.data) + '" onchange="salvarEtapa(\'' + et.id + '\', \'data\', this.value)"></div>' +
+        (et.rotuloDataFinal !== undefined ?
+          '<div class="campo"><label>' + escapar(et.rotuloDataFinal) + '</label>' +
+          '<input type="date" value="' + escapar(et.dataFinal || '') + '" onchange="salvarEtapa(\'' + et.id + '\', \'dataFinal\', this.value)"></div>' : '') +
+        (et.observacao !== undefined ?
+          '<div class="campo largo"><label>Observações</label>' +
+          '<textarea onblur="salvarEtapa(\'' + et.id + '\', \'observacao\', this.value)">' + escapar(et.observacao) + '</textarea></div>' : '') +
+      '</div>';
+
+    if (et.documentos) {
+      detalhe += '<div class="docs">' + et.documentos.map(function (d) {
+        return '<label class="doc' + (d.entregue ? ' entregue' : '') + '">' +
+          '<input type="checkbox"' + (d.entregue ? ' checked' : '') +
+          ' onchange="salvarDocumento(' + d.coluna + ', this.checked)">' +
+          '<span>' + escapar(d.nome) + '</span></label>';
+      }).join('') + '</div>';
+    }
+
+    var rotuloProgresso = et.documentos
+      ? '<span class="pct">' + Math.round(et.progresso * 100) + '%</span>'
+      : '';
+
+    return '<div class="etapa' + (et.concluido ? ' feita' : '') +
+        (et.naoSeAplica ? ' na' : '') + (et.foraDoServico ? ' fora' : '') +
+        '" id="etapa-' + et.id + '">' +
+      '<div class="etapa-topo">' +
+        '<span class="ordem">' + (i + 1) + '</span>' +
+        '<input type="checkbox"' + (et.concluido ? ' checked' : '') +
+          ' onchange="marcarEtapa(\'' + et.id + '\', this.checked)" title="' +
+          (et.naoSeAplica ? 'Marcar como concluída devolve a etapa para a conta'
+                          : 'Marcar etapa como concluída') + '">' +
+        '<span class="etapa-nome">' + escapar(et.nome) + '</span>' +
+        (et.foraDoServico
+          ? '<span class="etiqueta-na">só para ' + escapar((et.servicos || []).join(', ')) + '</span>'
+          : (et.naoSeAplica ? '<span class="etiqueta-na">não se aplica</span>' : '')) +
+        (et.responsavel ? '<span class="sub">' + escapar(et.responsavel) + '</span>' : '') +
+        (et.data ? '<span class="sub">' + porExtenso(et.data) + '</span>' : '') +
+        rotuloProgresso +
+        (et.foraDoServico ? '' : '<button class="btn-na' + (et.naoSeAplica ? ' ligado' : '') +
+          '" onclick="alternarNaoAplica(\'' + et.id + '\', ' + (!et.naoSeAplica) + ')" title="' +
+          (et.naoSeAplica
+            ? 'Devolver esta etapa para a conta do percentual'
+            : 'Tirar esta etapa da conta do percentual, para esta empresa') +
+          '">n/a</button>') +
+        '<button class="expandir" onclick="alternarDetalhe(\'' + et.id + '\')">detalhes ▾</button>' +
+      '</div>' +
+      '<div class="etapa-detalhe">' + detalhe + '</div></div>';
+  }
+
+  function alternarDetalhe(id) {
+    document.getElementById('etapa-' + id).classList.toggle('expandida');
+  }
+
+  /* ---------- gravação ---------- */
+
+  function aplicarRetorno(empresa) {
+    var expandidas = Array.prototype.slice
+      .call(document.querySelectorAll('.etapa.expandida'))
+      .map(function (el) { return el.id; });
+
+    for (var i = 0; i < dados.empresas.length; i++) {
+      if (dados.empresas[i].linha === empresa.linha) { dados.empresas[i] = empresa; break; }
+    }
+    desenhar();
+
+    // A alteração pode ter vindo da lista, com a ficha fechada.
+    if (empresaAberta && empresaAberta.linha === empresa.linha) {
+      desenharGaveta(empresa);
+      expandidas.forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) el.classList.add('expandida');
+      });
+    }
+    avisar('Salvo na planilha');
+  }
+
+  function erroAoSalvar(e) {
+    avisar('Não salvou: ' + (e && e.message ? e.message : e), true);
+    carregar();
+  }
+
+  function salvarCabecalho(campo, valor) {
+    if (!empresaAberta) return;
+    chamar('salvarCabecalho', [empresaAberta.linha, campo, valor])
+      .then(aplicarRetorno).catch(erroAoSalvar);
+  }
+
+  function salvarEtapa(etapaId, campo, valor) {
+    if (!empresaAberta) return;
+    chamar('salvarEtapaCampo', [empresaAberta.linha, etapaId, campo, valor])
+      .then(aplicarRetorno).catch(erroAoSalvar);
+  }
+
+  function alternarNaoAplica(etapaId, naoSeAplica) {
+    if (!empresaAberta) return;
+    chamar('definirNaoAplica', [empresaAberta.linha, etapaId, naoSeAplica])
+      .then(function (empresa) {
+        aplicarRetorno(empresa);
+        avisar(naoSeAplica ? 'Etapa fora da conta desta empresa' : 'Etapa de volta à conta');
+      })
+      .catch(erroAoSalvar);
+  }
+
+  function marcarEtapa(etapaId, concluido) {
+    if (!empresaAberta) return;
+    chamar('alternarEtapa', [empresaAberta.linha, etapaId, concluido])
+      .then(aplicarRetorno).catch(erroAoSalvar);
+  }
+
+  function salvarDocumento(coluna, entregue) {
+    if (!empresaAberta) return;
+    chamar('alternarDocumento', [empresaAberta.linha, coluna, entregue])
+      .then(aplicarRetorno).catch(erroAoSalvar);
+  }
+
+  function pedirExclusao() {
+    if (!empresaAberta) return;
+    document.getElementById('areaExclusao').innerHTML =
+      '<div class="confirma">' +
+        '<label for="nomeExclusao">Para confirmar, digite o nome da empresa: ' +
+        '<b>' + escapar(empresaAberta.nome) + '</b></label>' +
+        '<input id="nomeExclusao" type="text" autocomplete="off" spellcheck="false" ' +
+          'placeholder="Nome exato da empresa" oninput="conferirNomeExclusao()">' +
+        '<div class="linha-botoes">' +
+          '<button id="btnExcluir" class="btn btn-perigo" disabled onclick="confirmarExclusao()">' +
+            'Excluir definitivamente</button>' +
+          '<button class="btn" onclick="cancelarExclusao()">Cancelar</button>' +
+        '</div>' +
+      '</div>';
+    document.getElementById('nomeExclusao').focus();
+  }
+
+  function nomeConfere() {
+    var campo = document.getElementById('nomeExclusao');
+    if (!campo || !empresaAberta) return false;
+    return campo.value.trim().toUpperCase() === empresaAberta.nome.trim().toUpperCase();
+  }
+
+  function conferirNomeExclusao() {
+    document.getElementById('btnExcluir').disabled = !nomeConfere();
+  }
+
+  function cancelarExclusao() {
+    if (empresaAberta) desenharGaveta(empresaAberta);
+  }
+
+  function confirmarExclusao() {
+    if (!empresaAberta || !nomeConfere()) return;
+    var nome = empresaAberta.nome;
+    var botao = document.getElementById('btnExcluir');
+    botao.disabled = true;
+    botao.textContent = 'Excluindo…';
+
+    chamar('excluirEmpresa', [empresaAberta.linha, document.getElementById('nomeExclusao').value])
+      .then(function (painel) {
+        fecharGaveta();
+        aplicarPainel(painel, nome + ' foi excluída e arquivada na aba Excluidas');
+      })
+      .catch(function (erro) {
+        avisar('Não excluiu: ' + (erro && erro.message ? erro.message : erro), true);
+        if (empresaAberta) desenharGaveta(empresaAberta);
+      });
+  }
+
+  function novaEmpresa() {
+    var nome = prompt('Nome da empresa:');
+    if (!nome) return;
+    avisar('Criando…');
+    chamar('criarEmpresa', [nome]).then(function (empresa) {
+      dados.empresas.push(empresa);
+      desenhar();
+      abrirEmpresa(empresa.linha);
+      avisar('Empresa criada na planilha');
+    }).catch(erroAoSalvar);
+  }
+
+  /* ---------- histórico ---------- */
+
+  /* ---------- etapas do checklist ---------- */
+
+  function aplicarPainel(painel, avisoTexto) {
+    dados = painel;
+    montarCabecalhoDoChecklist();
+    preencherFiltros();
+    desenhar();
+    document.getElementById('carimbo').textContent =
+      dados.empresas.length + ' empresas · dados de ' + porExtenso(dados.hoje);
+    if (avisoTexto) avisar(avisoTexto);
+  }
+
+  function abrirEtapas() {
+    empresaAberta = null;
+    desenharEtapas();
+    document.getElementById('cortina').classList.add('aberta');
+    document.getElementById('gaveta').classList.add('aberta');
+  }
+
+  function desenharEtapas() {
+    var etapas = dados.etapas || [];
+    var servicos = dados.servicos || [];
+
+    var cabecalho =
+      '<tr><th class="etapa-col">Etapa</th>' +
+        '<th class="col-todos">Todos<small>' +
+          etapas.filter(function (e) { return !e.servicos.length; }).length + ' etapas</small></th>' +
+        servicos.map(function (nome, i) {
+          var quantas = etapas.filter(function (e) {
+            return !e.servicos.length || e.servicos.indexOf(nome) >= 0;
+          }).length;
+          return '<th><button type="button" onclick="alternarColunaDeServico(' + i + ')" ' +
+            'title="Marcar ou limpar esta coluna inteira">' + escapar(nome) + '</button>' +
+            '<small>' + quantas + ' etapas</small></th>';
+        }).join('') +
+        '<th></th></tr>';
+
+    var linhas = etapas.map(function (et) {
+      var todos = !et.servicos.length;
+      return '<tr id="config-' + et.id + '"' + (todos ? '' : ' class="so-de-servico"') + '>' +
+        '<td><div class="nome-etapa"><span class="ordem">' + et.posicao + '</span>' +
+          '<span class="sigla">' + escapar(et.sigla) + '</span>' +
+          '<span class="texto">' + escapar(et.nome) +
+          (et.removivel ? '' : ' <span class="sub">· estrutural</span>') + '</span></div></td>' +
+        '<td class="marca col-todos"><input type="checkbox"' + (todos ? ' checked' : '') +
+          ' onchange="marcarTodosOsServicos(\'' + et.id + '\', this.checked)" ' +
+          'title="Vale para todos os serviços"></td>' +
+        servicos.map(function (nome) {
+          return '<td class="marca"><input type="checkbox"' +
+            (et.servicos.indexOf(nome) >= 0 ? ' checked' : '') +
+            ' onchange="marcarServicoDaEtapa(\'' + et.id + '\', \'' + escapar(nome) +
+            '\', this.checked)"></td>';
+        }).join('') +
+        '<td class="acoes">' +
+          '<button class="btn" onclick="editarEtapa(\'' + et.id + '\')">Renomear</button>' +
+          (et.removivel
+            ? ' <button class="btn btn-perigo" onclick="pedirExclusaoEtapa(\'' + et.id + '\')">Excluir</button>'
+            : '') +
+        '</td></tr>';
+    }).join('');
+
+    document.getElementById('gavetaConteudo').innerHTML =
+      '<header><div class="titulo"><h1>Etapas do checklist</h1>' +
+        '<div class="acoes"><button class="btn" onclick="fecharGaveta()">Fechar</button></div>' +
+      '</div><div class="sub" style="padding-bottom:12px">' +
+        'O checklist é um só. Marque a que serviços cada etapa pertence — a mesma etapa pode ' +
+        'servir a vários. Sem nenhuma marca, ela vale para todos.</div></header>' +
+      '<div class="corpo">' +
+        '<div class="bloco"><h3>Etapas e serviços</h3>' +
+          '<table class="matriz"><thead>' + cabecalho + '</thead><tbody>' + linhas + '</tbody></table>' +
+        '</div>' +
+        '<div class="bloco"><h3>Incluir etapa</h3>' +
+          '<div class="form-etapa">' +
+            '<div class="campo"><label for="novaEtapaNome">Nome da etapa</label>' +
+              '<input type="text" id="novaEtapaNome" placeholder="Ex.: Conferir cálculo com o cliente"></div>' +
+            '<div class="campo estreito"><label for="novaEtapaSigla">Sigla</label>' +
+              '<input type="text" id="novaEtapaSigla" maxlength="5" placeholder="automática"></div>' +
+            '<button class="btn btn-primario" onclick="incluirEtapa()">Incluir no fim</button>' +
+          '</div>' +
+          escolhaDeServicos('servNova', []) +
+        '</div>' +
+      '</div>';
+  }
+
+  function servicosDaEtapa(id) {
+    var etapa = (dados.etapas || []).filter(function (e) { return e.id === id; })[0];
+    return etapa ? (etapa.servicos || []).slice() : [];
+  }
+
+  function gravarServicos(id, servicos, texto) {
+    chamar('definirServicosDaEtapa', [id, servicos])
+      .then(function (painel) { aplicarPainel(painel, texto); desenharEtapas(); })
+      .catch(function (erro) { avisar('Não salvou: ' + erro.message, true); desenharEtapas(); });
+  }
+
+  /** A caixa "Todos" é o mesmo que nenhum serviço marcado. */
+  function marcarTodosOsServicos(id, marcado) {
+    if (!marcado) {
+      desenharEtapas();
+      avisar('Escolha ao menos um serviço, ou deixe em Todos');
+      return;
+    }
+    gravarServicos(id, [], 'Etapa vale para todos os serviços');
+  }
+
+  function marcarServicoDaEtapa(id, servico, marcado) {
+    var atuais = servicosDaEtapa(id);
+    var novos = marcado
+      ? atuais.concat([servico])
+      : atuais.filter(function (s) { return s !== servico; });
+
+    gravarServicos(id, novos, novos.length
+      ? 'Etapa em: ' + novos.join(', ')
+      : 'Etapa vale para todos os serviços');
+  }
+
+  /** Marca ou limpa uma coluna inteira da matriz, num só passo. */
+  function alternarColunaDeServico(indice) {
+    var servico = (dados.servicos || [])[indice];
+    if (!servico) return;
+
+    var etapas = dados.etapas || [];
+    var todasJaTem = etapas.every(function (e) { return e.servicos.indexOf(servico) >= 0; });
+
+    var itens = etapas.map(function (e) {
+      var atuais = (e.servicos || []).slice();
+      if (todasJaTem) atuais = atuais.filter(function (s) { return s !== servico; });
+      else if (atuais.indexOf(servico) < 0) atuais.push(servico);
+      return { id: e.id, servicos: atuais };
+    });
+
+    avisar('Atualizando a coluna…');
+    chamar('definirServicosDeVarias', [itens])
+      .then(function (painel) {
+        aplicarPainel(painel, todasJaTem
+          ? servico + ' tirado de todas as etapas'
+          : 'Todas as etapas passaram a servir ' + servico);
+        desenharEtapas();
+      })
+      .catch(function (erro) { avisar('Não salvou: ' + erro.message, true); desenharEtapas(); });
+  }
+
+
+  function tagsDeServico(servicos) {
+    if (!servicos || !servicos.length) {
+      return '<span class="servico-tag todos">todos os serviços</span>';
+    }
+    return servicos.map(function (s) {
+      return '<span class="servico-tag">' + escapar(s) + '</span>';
+    }).join('');
+  }
+
+  /** Caixinhas de serviço — nenhuma marcada quer dizer "vale para todos". */
+  function escolhaDeServicos(idPrefixo, marcados) {
+    return '<div class="escolha-servicos">' +
+      (dados.servicos || []).map(function (nome, i) {
+        return '<label><input type="checkbox" id="' + idPrefixo + i + '" value="' + escapar(nome) + '"' +
+          (marcados.indexOf(nome) >= 0 ? ' checked' : '') + '> ' + escapar(nome) + '</label>';
+      }).join('') +
+      '<span class="sub">nenhuma marcada = vale para todos</span></div>';
+  }
+
+  function lerEscolhaDeServicos(idPrefixo) {
+    var escolhidos = [];
+    (dados.servicos || []).forEach(function (nome, i) {
+      var caixa = document.getElementById(idPrefixo + i);
+      if (caixa && caixa.checked) escolhidos.push(caixa.value);
+    });
+    return escolhidos;
+  }
+
+
+  function incluirEtapa() {
+    var nome = document.getElementById('novaEtapaNome').value;
+    if (!nome.trim()) { avisar('Dê um nome para a etapa', true); return; }
+    var sigla = document.getElementById('novaEtapaSigla').value;
+    avisar('Criando as colunas na planilha…');
+    chamar('criarEtapa', [nome, sigla, lerEscolhaDeServicos('servNova')])
+      .then(function (painel) { aplicarPainel(painel, 'Etapa incluída no checklist'); desenharEtapas(); })
+      .catch(function (erro) { avisar('Não incluiu: ' + erro.message, true); });
+  }
+
+  function editarEtapa(id) {
+    var etapa = (dados.etapas || []).filter(function (e) { return e.id === id; })[0];
+    if (!etapa) return;
+    document.getElementById('config-' + id).innerHTML =
+      '<span class="ordem">' + etapa.posicao + '</span>' +
+      '<input type="text" id="editaSigla" maxlength="5" value="' + escapar(etapa.sigla) +
+        '" style="width:80px;border:1px solid var(--linha);border-radius:6px;padding:5px 8px">' +
+      '<input type="text" id="editaNome" value="' + escapar(etapa.nome) +
+        '" style="flex:1;border:1px solid var(--linha);border-radius:6px;padding:5px 8px">' +
+      '<span class="acoes">' +
+        '<button class="btn btn-primario" onclick="salvarEtapaRenomeada(\'' + id + '\')">Salvar</button>' +
+        '<button class="btn" onclick="desenharEtapas()">Cancelar</button>' +
+      '</span>';
+    document.getElementById('editaNome').focus();
+  }
+
+  function salvarEtapaRenomeada(id) {
+    var nome = document.getElementById('editaNome').value;
+    var sigla = document.getElementById('editaSigla').value;
+    chamar('renomearEtapa', [id, nome, sigla])
+      .then(function (painel) { aplicarPainel(painel, 'Etapa renomeada'); desenharEtapas(); })
+      .catch(function (erro) { avisar('Não renomeou: ' + erro.message, true); desenharEtapas(); });
+  }
+
+  function pedirExclusaoEtapa(id) {
+    var etapa = (dados.etapas || []).filter(function (e) { return e.id === id; })[0];
+    if (!etapa) return;
+    document.getElementById('config-' + id).innerHTML =
+      '<div class="confirma" style="width:100%">' +
+        '<label for="nomeExclusaoEtapa">Para tirar <b>' + escapar(etapa.nome) +
+          '</b> do checklist, digite o nome dela. O que cada empresa já tinha preenchido ' +
+          'vai para a aba <b>Etapas excluidas</b>.</label>' +
+        '<input id="nomeExclusaoEtapa" type="text" autocomplete="off" ' +
+          'oninput="conferirNomeEtapa(\'' + id + '\')">' +
+        '<div class="linha-botoes">' +
+          '<button id="btnExcluirEtapa" class="btn btn-perigo" disabled ' +
+            'onclick="confirmarExclusaoEtapa(\'' + id + '\')">Excluir etapa</button>' +
+          '<button class="btn" onclick="desenharEtapas()">Cancelar</button>' +
+        '</div>' +
+      '</div>';
+    document.getElementById('nomeExclusaoEtapa').focus();
+  }
+
+  function nomeDaEtapaConfere(id) {
+    var etapa = (dados.etapas || []).filter(function (e) { return e.id === id; })[0];
+    var campo = document.getElementById('nomeExclusaoEtapa');
+    return !!etapa && !!campo &&
+      campo.value.trim().toUpperCase() === etapa.nome.trim().toUpperCase();
+  }
+
+  function conferirNomeEtapa(id) {
+    document.getElementById('btnExcluirEtapa').disabled = !nomeDaEtapaConfere(id);
+  }
+
+  function confirmarExclusaoEtapa(id) {
+    if (!nomeDaEtapaConfere(id)) return;
+    var botao = document.getElementById('btnExcluirEtapa');
+    botao.disabled = true;
+    botao.textContent = 'Excluindo…';
+    chamar('excluirEtapa', [id, document.getElementById('nomeExclusaoEtapa').value])
+      .then(function (painel) {
+        aplicarPainel(painel, 'Etapa removida do checklist e arquivada');
+        desenharEtapas();
+      })
+      .catch(function (erro) { avisar('Não excluiu: ' + erro.message, true); desenharEtapas(); });
+  }
+
+  function abrirCampos() {
+    empresaAberta = null;
+    desenharCampos();
+    document.getElementById('cortina').classList.add('aberta');
+    document.getElementById('gaveta').classList.add('aberta');
+  }
+
+  function desenharCampos() {
+    var campos = dados.camposDeServico || [];
+    var servicos = dados.servicos || [];
+
+    var linhas = campos.length
+      ? campos.map(function (c) {
+          return '<tr id="campo-' + c.id + '">' +
+            '<td><b>' + escapar(c.rotulo) + '</b></td>' +
+            '<td><span class="etiqueta">' + escapar(c.tipo) + '</span>' +
+              (c.opcoes && c.opcoes.length
+                ? '<div class="sub">' + escapar(c.opcoes.join(' · ')) + '</div>' : '') + '</td>' +
+            '<td>' + (c.servico
+              ? '<span class="servico-tag">' + escapar(c.servico) + '</span>'
+              : '<span class="servico-tag todos">todos os serviços</span>') + '</td>' +
+            '<td class="acoes"><button class="btn btn-perigo" onclick="pedirExclusaoCampo(\'' +
+              c.id + '\')">Excluir</button></td></tr>';
+        }).join('')
+      : '<tr><td colspan="4" class="sub">Nenhum campo ainda.</td></tr>';
+
+    document.getElementById('gavetaConteudo').innerHTML =
+      '<header><div class="titulo"><h1>Campos por serviço</h1>' +
+        '<div class="acoes"><button class="btn" onclick="fecharGaveta()">Fechar</button></div>' +
+      '</div><div class="sub" style="padding-bottom:12px">' +
+        'Informações que só alguns serviços pedem — como a ligação que ofereceu o crédito, ' +
+        'no Goiás Fomento. Cada campo vira uma coluna no fim da planilha e aparece na ficha ' +
+        'das empresas do serviço.</div></header>' +
+      '<div class="corpo">' +
+        '<div class="bloco"><h3>Campos cadastrados</h3>' +
+          '<table class="matriz"><thead><tr><th class="etapa-col">Campo</th><th class="etapa-col">Tipo</th>' +
+          '<th class="etapa-col">Serviço</th><th></th></tr></thead><tbody>' + linhas + '</tbody></table>' +
+        '</div>' +
+        '<div class="bloco"><h3>Novo campo</h3><div class="campos">' +
+          '<div class="campo"><label for="novoCampoRotulo">Nome do campo</label>' +
+            '<input type="text" id="novoCampoRotulo" placeholder="Ex.: Data do protocolo"></div>' +
+          '<div class="campo"><label for="novoCampoTipo">Tipo</label><select id="novoCampoTipo" ' +
+            'onchange="document.getElementById(\'linhaOpcoes\').style.display = ' +
+            'this.value === \'lista\' ? \'\' : \'none\'">' +
+            (dados.tiposDeCampo || []).map(function (t) {
+              return '<option value="' + escapar(t) + '">' + escapar(t) + '</option>';
+            }).join('') + '</select></div>' +
+          '<div class="campo"><label for="novoCampoServico">Serviço</label>' +
+            '<select id="novoCampoServico"><option value="">todos os serviços</option>' +
+            servicos.map(function (n) {
+              return '<option value="' + escapar(n) + '">' + escapar(n) + '</option>';
+            }).join('') + '</select></div>' +
+          '<div class="campo" id="linhaOpcoes" style="display:none"><label for="novoCampoOpcoes">' +
+            'Opções da lista, separadas por vírgula</label>' +
+            '<input type="text" id="novoCampoOpcoes" placeholder="Interessado, Sem interesse"></div>' +
+          '<div class="campo largo">' +
+            '<button class="btn btn-primario" onclick="incluirCampo()">Criar campo</button></div>' +
+        '</div></div>' +
+      '</div>';
+  }
+
+  function incluirCampo() {
+    var rotulo = document.getElementById('novoCampoRotulo').value;
+    if (!rotulo.trim()) { avisar('Dê um nome ao campo', true); return; }
+    avisar('Criando a coluna na planilha…');
+    chamar('criarCampo', [rotulo, document.getElementById('novoCampoTipo').value,
+                          document.getElementById('novoCampoServico').value,
+                          document.getElementById('novoCampoOpcoes').value])
+      .then(function (painel) { aplicarPainel(painel, 'Campo criado'); desenharCampos(); })
+      .catch(function (erro) { avisar('Não criou: ' + erro.message, true); });
+  }
+
+  function pedirExclusaoCampo(id) {
+    var campo = (dados.camposDeServico || []).filter(function (c) { return c.id === id; })[0];
+    if (!campo) return;
+    document.getElementById('campo-' + id).innerHTML =
+      '<td colspan="4"><div class="confirma">' +
+        '<label for="nomeExclusaoCampo">Para tirar <b>' + escapar(campo.rotulo) +
+          '</b> da ficha, digite o nome dele. A coluna e o que já foi preenchido ' +
+          'continuam na planilha.</label>' +
+        '<input id="nomeExclusaoCampo" type="text" autocomplete="off" ' +
+          'oninput="document.getElementById(\'btnExcluirCampo\').disabled = ' +
+          'this.value.trim().toUpperCase() !== \'' + escapar(campo.rotulo.toUpperCase()) + '\'">' +
+        '<div class="linha-botoes">' +
+          '<button id="btnExcluirCampo" class="btn btn-perigo" disabled onclick="confirmarExclusaoCampo(\'' +
+            id + '\')">Excluir campo</button>' +
+          '<button class="btn" onclick="desenharCampos()">Cancelar</button>' +
+        '</div></div></td>';
+    document.getElementById('nomeExclusaoCampo').focus();
+  }
+
+  function confirmarExclusaoCampo(id) {
+    chamar('excluirCampo', [id, document.getElementById('nomeExclusaoCampo').value])
+      .then(function (painel) { aplicarPainel(painel, 'Campo removido da ficha'); desenharCampos(); })
+      .catch(function (erro) { avisar('Não excluiu: ' + erro.message, true); desenharCampos(); });
+  }
+
+  /* ---------- importar lista de clientes ---------- */
+
+  function abrirImportacao() {
+    empresaAberta = null;
+    document.getElementById('gavetaConteudo').innerHTML =
+      '<header><div class="titulo"><h1>Importar clientes</h1>' +
+        '<div class="acoes"><button class="btn" onclick="fecharGaveta()">Fechar</button></div>' +
+      '</div><div class="sub" style="padding-bottom:12px">' +
+        'Cole a lista como ela chega. Cada bloco precisa da razão social e do CNPJ; ' +
+        'município, nome fantasia, protocolo, telefones, e-mails e proprietários são lidos ' +
+        'quando estiverem lá. Quem já estiver cadastrado pelo CNPJ é deixado de fora.' +
+      '</div></header>' +
+      '<div class="corpo">' +
+        '<div class="bloco"><h3>A lista</h3>' +
+          '<div class="campos">' +
+            '<div class="campo"><label for="servicoImportacao">Serviço destes clientes</label>' +
+              '<select id="servicoImportacao">' +
+              (dados.servicos || []).map(function (n) {
+                return '<option value="' + escapar(n) + '"' +
+                  (n === 'Goiás Fomento' ? ' selected' : '') + '>' + escapar(n) + '</option>';
+              }).join('') + '</select></div>' +
+            '<div class="campo largo"><label for="textoImportacao">Cole aqui</label>' +
+              '<textarea id="textoImportacao" style="min-height:220px" ' +
+              'placeholder="MUNICÍPIO: GOIANIA&#10;&#10;RAZÃO SOCIAL LTDA&#10;&#10;00.000.000/0001-00&#10;…"></textarea></div>' +
+            '<div class="campo largo"><button class="btn" onclick="conferirImportacao()">Conferir</button>' +
+            ' <button class="btn btn-primario" id="btnImportar" onclick="executarImportacao()" disabled>' +
+            'Cadastrar os clientes</button></div>' +
+          '</div>' +
+        '</div>' +
+        '<div id="previaImportacao"></div>' +
+      '</div>';
+    document.getElementById('cortina').classList.add('aberta');
+    document.getElementById('gaveta').classList.add('aberta');
+  }
+
+  var ultimaImportacao = [];
+
+  /** Tira da planilha exatamente o que a última importação pôs. */
+  function desfazerUltimaImportacao() {
+    if (!ultimaImportacao.length) return;
+    if (!confirm('Excluir as ' + ultimaImportacao.length +
+                 ' empresas que acabaram de entrar? Elas vão para a aba Excluidas.')) return;
+
+    avisar('Desfazendo…');
+    chamar('desfazerImportacao', [ultimaImportacao]).then(function (painel) {
+      var quantas = (painel.desfeito || []).length;
+      ultimaImportacao = [];
+      aplicarPainel(painel, quantas + ' empresa(s) removidas');
+      document.getElementById('previaImportacao').innerHTML =
+        '<div class="bloco"><h3>Desfeito</h3><p class="sub">' + quantas +
+        ' empresa(s) saíram da planilha e ficaram guardadas na aba Excluidas.</p></div>';
+    }).catch(function (erro) { avisar('Não desfez: ' + erro.message, true); });
+  }
+
+  /** Mostra o que foi entendido antes de gravar — é cadastro em massa. */
+  function conferirImportacao() {
+    var texto = document.getElementById('textoImportacao').value;
+    if (!texto.trim()) { avisar('Cole a lista primeiro', true); return; }
+
+    chamar('conferirListaDeClientes',
+           [texto, document.getElementById('servicoImportacao').value]).then(function (resultado) {
+      var area = document.getElementById('previaImportacao');
+      if (!resultado.total) {
+        area.innerHTML = '<div class="bloco"><div class="sem-dado">' +
+          'Não reconheci nenhum cliente nesse texto.</div></div>';
+        document.getElementById('btnImportar').disabled = true;
+        return;
+      }
+
+      var novos = resultado.clientes.filter(function (c) { return !c.jaCadastrado; }).length;
+      var noutroServico = resultado.clientes.filter(function (c) {
+        return !c.jaCadastrado && c.tambemEm;
+      }).length;
+      var recusados = resultado.recusados || [];
+      var aviso = recusados.length
+        ? '<div class="aviso-faixa" style="margin:0 0 12px"><span><b>' + recusados.length +
+          '</b> trecho(s) não viraram cliente:</span> <span class="sub">' +
+          recusados.map(function (r) {
+            return escapar(r.trecho) + ' (' + escapar(r.motivo) + ')';
+          }).join(' · ') + '</span></div>'
+        : '';
+
+      var avisoServicos = noutroServico
+        ? '<p class="sub" style="margin:-6px 0 10px">' + noutroServico +
+          ' já é cliente de outro serviço — entra como linha nova, porque cada serviço ' +
+          'tem o próprio fluxo e o próprio andamento.</p>'
+        : '';
+
+      area.innerHTML = '<div class="bloco"><h3>' + resultado.total + ' cliente(s) na lista · ' +
+          novos + ' para cadastrar</h3>' + aviso + avisoServicos +
+        '<table class="matriz"><thead><tr><th class="etapa-col">Empresa</th>' +
+        '<th class="etapa-col">CNPJ</th><th class="etapa-col">O que veio junto</th></tr></thead><tbody>' +
+        resultado.clientes.map(function (c) {
+          var detalhes = Object.keys(c.campos).map(function (k) {
+            return '<b>' + escapar(k) + ':</b> ' + escapar(c.campos[k]);
+          }).join(' · ');
+          return '<tr><td><b>' + escapar(c.nome) + '</b>' +
+            (c.jaCadastrado
+              ? ' <span class="etiqueta">já neste serviço — será completado</span>'
+              : (c.tambemEm
+                ? ' <span class="etiqueta">também em ' + escapar(c.tambemEm) + '</span>'
+                : '')) + '</td>' +
+            '<td class="cnpj">' + escapar(c.cnpj) + '</td>' +
+            '<td class="sub">' + (detalhes || '—') + '</td></tr>';
+        }).join('') + '</tbody></table></div>';
+
+      document.getElementById('btnImportar').disabled = novos === 0;
+      avisar(novos ? novos + ' cliente(s) prontos para cadastrar' : 'Todos já estão cadastrados');
+    }).catch(function (erro) { avisar('Não consegui ler: ' + erro.message, true); });
+  }
+
+  function executarImportacao() {
+    var texto = document.getElementById('textoImportacao').value;
+    var servico = document.getElementById('servicoImportacao').value;
+    var botao = document.getElementById('btnImportar');
+    botao.disabled = true;
+    botao.textContent = 'Cadastrando…';
+
+    chamar('importarClientes', [texto, servico]).then(function (painel) {
+      var feito = painel.importacao || { criados: [], repetidos: [] };
+      aplicarPainel(painel, feito.criados.length + ' cliente(s) cadastrados em ' + servico);
+      ultimaImportacao = feito.criados.slice();
+      document.getElementById('previaImportacao').innerHTML =
+        '<div class="bloco"><h3>Pronto</h3>' +
+        '<p class="sub">' + feito.criados.length + ' cadastrados' +
+        (feito.atualizados && feito.atualizados.length
+          ? ' · ' + feito.atualizados.length + ' já estavam neste serviço e foram completados'
+          : '') +
+        (feito.tambemEmOutroServico && feito.tambemEmOutroServico.length
+          ? ' · ' + feito.tambemEmOutroServico.length + ' também são clientes de outro serviço'
+          : '') +
+        '</p><ul class="sub">' + feito.criados.map(function (n) {
+          return '<li>' + escapar(n) + '</li>';
+        }).join('') + '</ul>' +
+        (feito.criados.length
+          ? '<button class="btn btn-perigo" onclick="desfazerUltimaImportacao()">' +
+            'Desfazer esta importação</button>'
+          : '') +
+        '</div>';
+      document.getElementById('textoImportacao').value = '';
+      botao.textContent = 'Cadastrar os clientes';
+    }).catch(function (erro) {
+      avisar('Não importou: ' + erro.message, true);
+      botao.disabled = false;
+      botao.textContent = 'Cadastrar os clientes';
+    });
+  }
+
+  function abrirLog() {
+    empresaAberta = null;
+    document.getElementById('gavetaConteudo').innerHTML =
+      '<header><div class="titulo"><h1>Histórico de alterações</h1>' +
+      '<div class="acoes"><button class="btn" onclick="fecharGaveta()">Fechar</button></div>' +
+      '</div><div class="sub" style="padding-bottom:12px">Últimas 150 alterações feitas pelo painel</div></header>' +
+      '<div class="corpo">' +
+        '<div class="bloco" id="excluidasConteudo" style="display:none"></div>' +
+        '<div class="bloco" id="logConteudo">carregando…</div>' +
+      '</div>';
+    document.getElementById('cortina').classList.add('aberta');
+    document.getElementById('gaveta').classList.add('aberta');
+
+    chamar('lerLog', [150]).then(function (linhas) {
+      var el = document.getElementById('logConteudo');
+      if (!el) return;
+      if (!linhas.length) { el.innerHTML = '<div class="sub">Nada registrado ainda.</div>'; return; }
+      el.innerHTML = linhas.map(function (l) {
+        return '<div class="log-linha"><span class="quando">' + escapar(l.quando) + '</span>' +
+          '<span><b>' + escapar(l.empresa) + '</b> — ' + escapar(l.oque) +
+          ': <span class="sub">' + escapar(l.anterior) + ' → </span>' + escapar(l.novo) +
+          '<div class="sub">' + escapar(l.quem) + '</div></span></div>';
+      }).join('');
+    }).catch(function (e) { avisar('Erro no histórico: ' + e.message, true); });
+
+    chamar('listarExcluidas', [50]).then(function (linhas) {
+      var el = document.getElementById('excluidasConteudo');
+      if (!el || !linhas.length) return;
+      el.style.display = '';
+      el.innerHTML = '<h3>Empresas excluídas</h3>' +
+        '<p class="sub" style="margin:-6px 0 10px">A linha completa de cada uma está na aba ' +
+        '<b>Excluidas</b> da planilha, pronta para copiar de volta.</p>' +
+        linhas.map(function (l) {
+          return '<div class="log-linha"><span class="quando">' + escapar(l.quando) + '</span>' +
+            '<span><b>' + escapar(l.empresa) + '</b>' +
+            (l.regime ? ' <span class="sub">· ' + escapar(l.regime) + '</span>' : '') +
+            '<div class="sub">excluída por ' + escapar(l.quem) + '</div></span></div>';
+        }).join('');
+    }).catch(function () { /* aba ainda não existe: nada a mostrar */ });
+  }
+
+  document.addEventListener('keydown', function (ev) {
+    if (ev.key === 'Escape') fecharGaveta();
+  });
+
+  var redesenho = null;
+  window.addEventListener('resize', function () {
+    clearTimeout(redesenho);
+    redesenho = setTimeout(function () {
+      if (document.getElementById('secao-visao').classList.contains('ativa')) desenharGraficos();
+    }, 150);
+  });
+
+  carregar();
+</script>
+</body>
+</html>

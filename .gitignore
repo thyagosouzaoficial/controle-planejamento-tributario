@@ -1,0 +1,16 @@
+# ---------------------------------------------------------------
+# Dado de cliente nunca entra no repositório.
+# São CNPJs, telefones, e-mails e nomes de proprietários reais —
+# sigilo profissional contábil e LGPD. Ficam só na máquina.
+# ---------------------------------------------------------------
+teste/dados/prospeccao.txt
+teste/dados/clientes-exemplo.txt
+previa.html
+previa-*.html
+exemplo-exportacao.xlsx
+*.xlsx
+*.csv
+
+# gerados
+node_modules/
+.DS_Store
