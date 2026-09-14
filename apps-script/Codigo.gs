@@ -6,7 +6,19 @@
  * planilha possa continuar usando normalmente.
  */
 
-const PLANILHA_ID = '1JHsoKxjFlI5N9zzVhVxjWgajyty0W93LRj-nwDVfcFs';
+/**
+ * Deixe vazio: o script fica vinculado à planilha (Extensões › Apps Script),
+ * então ele já sabe qual é. Só preencha com o ID se um dia precisar apontar
+ * para outra planilha — e, nesse caso, não versione o ID.
+ */
+const PLANILHA_ID = '';
+
+/** A planilha onde tudo acontece. */
+function planilha_() {
+  return PLANILHA_ID
+    ? planilha_()
+    : SpreadsheetApp.getActiveSpreadsheet();
+}
 const ABA_DADOS = 'Controle';
 const ABA_USUARIOS = 'Diagnostico';
 const ABA_LOG = 'Log';
@@ -157,7 +169,7 @@ function etapas_() {
 }
 
 function abaEtapas_() {
-  const planilha = SpreadsheetApp.openById(PLANILHA_ID);
+  const planilha = planilha_();
   let sheet = planilha.getSheetByName(ABA_ETAPAS);
   if (sheet) return sheet;
 
@@ -506,7 +518,7 @@ function renumerarEtapas_() {
 
 /** Guarda o que cada empresa tinha nessa etapa, para não se perder nada. */
 function arquivarEtapa_(etapa) {
-  const planilha = SpreadsheetApp.openById(PLANILHA_ID);
+  const planilha = planilha_();
   let sheet = planilha.getSheetByName(ABA_ETAPAS_EXCLUIDAS);
   if (!sheet) {
     sheet = planilha.insertSheet(ABA_ETAPAS_EXCLUIDAS);
@@ -727,7 +739,7 @@ function campos_() {
 }
 
 function abaCampos_() {
-  const planilha = SpreadsheetApp.openById(PLANILHA_ID);
+  const planilha = planilha_();
   let sheet = planilha.getSheetByName(ABA_CAMPOS);
   if (sheet) return sheet;
 
@@ -1164,7 +1176,7 @@ function desfazerImportacao(nomes) {
  * ------------------------------------------------------------------ */
 
 function abaServicos_() {
-  const planilha = SpreadsheetApp.openById(PLANILHA_ID);
+  const planilha = planilha_();
   let sheet = planilha.getSheetByName(ABA_SERVICOS);
   if (sheet) return sheet;
 
@@ -1285,7 +1297,7 @@ function doGet() {
  * ------------------------------------------------------------------ */
 
 function aba_() {
-  return SpreadsheetApp.openById(PLANILHA_ID).getSheetByName(ABA_DADOS);
+  return planilha_().getSheetByName(ABA_DADOS);
 }
 
 /** Converte o que estiver na célula de data para ISO (aaaa-mm-dd) ou ''. */
@@ -1525,7 +1537,7 @@ function carregarPainel() {
 }
 
 function listarUsuarios_() {
-  const sheet = SpreadsheetApp.openById(PLANILHA_ID).getSheetByName(ABA_USUARIOS);
+  const sheet = planilha_().getSheetByName(ABA_USUARIOS);
   if (!sheet || sheet.getLastRow() < 2) return [];
   return sheet
     .getRange(2, 1, sheet.getLastRow() - 1, 1)
@@ -1748,7 +1760,7 @@ function rotulosColunas_() {
 }
 
 function abaExcluidas_() {
-  const planilha = SpreadsheetApp.openById(PLANILHA_ID);
+  const planilha = planilha_();
   let sheet = planilha.getSheetByName(ABA_EXCLUIDAS);
   const largura = totalColunas_() + 2;
 
@@ -2082,7 +2094,7 @@ function exportarParaExcel(linhas) {
  * ------------------------------------------------------------------ */
 
 function abaLog_() {
-  const planilha = SpreadsheetApp.openById(PLANILHA_ID);
+  const planilha = planilha_();
   let sheet = planilha.getSheetByName(ABA_LOG);
   if (!sheet) {
     sheet = planilha.insertSheet(ABA_LOG);

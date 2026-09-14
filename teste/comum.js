@@ -161,13 +161,16 @@ function criarPlanilhaSimulada(grade, usuarios, Data) {
       (usuarios || []).map(function (u) { return [u]; })))
   };
 
+  function planilhaSimulada() {
+    return {
+      getSheetByName: function (n) { return abas[n] || null; },
+      insertSheet: function (n) { abas[n] = new Aba(n, []); return abas[n]; }
+    };
+  }
+
   var SpreadsheetApp = {
-    openById: function () {
-      return {
-        getSheetByName: function (n) { return abas[n] || null; },
-        insertSheet: function (n) { abas[n] = new Aba(n, []); return abas[n]; }
-      };
-    },
+    openById: planilhaSimulada,
+    getActiveSpreadsheet: planilhaSimulada,
     flush: function () {},
     CopyPasteType: { PASTE_FORMAT: 'formato' },
     getUi: function () {

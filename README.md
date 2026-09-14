@@ -75,6 +75,11 @@ roda dentro do Google Sheets, que não tem modo escuro.
 
 ## Dado de cliente não entra neste repositório
 
+O **ID da planilha também não**: o script fica vinculado a ela (Extensões › Apps Script),
+então `SpreadsheetApp.getActiveSpreadsheet()` já sabe qual é. A constante `PLANILHA_ID` no
+`Codigo.gs` existe só para o caso de apontar para outra planilha, e deve ficar vazia.
+
+
 As listas de importação e a prévia gerada contêm CNPJ, telefone, e-mail e nome de
 proprietário de clientes reais — sigilo profissional contábil e LGPD. Elas estão no
 `.gitignore` e ficam só na máquina de quem trabalha no sistema.
@@ -137,7 +142,9 @@ teste/
 ## Ver antes de instalar
 
 ```bash
-curl -sL "https://docs.google.com/spreadsheets/d/1JHsoKxjFlI5N9zzVhVxjWgajyty0W93LRj-nwDVfcFs/export?format=csv&gid=0" -o /tmp/controle.csv
+# o ID da planilha está na URL dela, entre /d/ e /edit
+PLANILHA="cole-aqui-o-id-da-sua-planilha"
+curl -sL "https://docs.google.com/spreadsheets/d/$PLANILHA/export?format=csv&gid=0" -o /tmp/controle.csv
 node teste/previa.js /tmp/controle.csv && open previa.html
 ```
 
