@@ -29,6 +29,15 @@ const agora = new Date();
 const doisDigitos = (n) => String(n).padStart(2, '0');
 const carimboDaGeracao = doisDigitos(agora.getDate()) + '/' + doisDigitos(agora.getMonth() + 1) +
   ' às ' + doisDigitos(agora.getHours()) + ':' + doisDigitos(agora.getMinutes());
+
+/* os serviços que o código de hoje cria — serve para perceber estado antigo */
+const codigoCru = fs.readFileSync(path.join(RAIZ, 'apps-script', 'Codigo.gs'), 'utf8');
+/* os nomes vêm do SERVICOS_PADRAO e das constantes que ele referencia */
+const trechos = [(codigoCru.match(/const SERVICOS_PADRAO[\s\S]*?;/) || [''])[0]]
+  .concat(codigoCru.match(/const FOMENTO_[A-Z]+ = '[^']+';/g) || []);
+const assinaturaDaEstrutura = trechos.join(' ').match(/'[^']+'/g)
+  .map(function (t) { return t.replace(/'/g, ''); })
+  .filter(function (t) { return t.length > 3; });
 const usuarios = ['Adriel Moreira', 'Warley', 'Alessandra', 'Thyago Souza', 'Thierry'];
 
 /** Datas viram texto no JSON: marco as posições para reconstruí-las no navegador. */
@@ -68,6 +77,11 @@ var GRADE = ${JSON.stringify(gradeSerial)}.map(function (linha) {
  * ----------------------------------------------------------------- */
 var CHAVE_ESTADO = 'previa-planejamento-v1';
 var GERADA_EM = ${JSON.stringify(carimboDaGeracao)};
+
+/* Assinatura da estrutura que este código espera criar. Se o estado guardado
+   foi feito com outra, a prévia mostra o que já existe — e avisa, em vez de
+   deixar a pessoa achando que a mudança não chegou. */
+var ESTRUTURA_ESPERADA = ${JSON.stringify(assinaturaDaEstrutura)};
 
 function serializar(valor) {
   if (valor instanceof Date) {
@@ -222,16 +236,33 @@ semearClientesDoFomento();
       'font-size:11.5px;cursor:pointer">Recomeçar do zero</button>';
   }
 
-  /* se já havia trabalho guardado, diz isso logo ao abrir */
+  /* o estado guardado pode ser de uma versão anterior do sistema */
+  function estruturaDefasada() {
+    if (!ESTADO_GUARDADO || !ESTADO_GUARDADO.Servicos) return false;
+    var guardados = ESTADO_GUARDADO.Servicos.slice(1)
+      .map(function (l) { return String(l[0] || '').trim(); })
+      .filter(function (n) { return n; });
+    return ESTRUTURA_ESPERADA.some(function (n) { return guardados.indexOf(n) < 0; });
+  }
+
+  var botaoRecomecar = '<button onclick="recomecarPrevia()" style="margin-left:10px;' +
+    'background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.5);color:#fff;' +
+    'border-radius:5px;padding:3px 12px;font-size:11.5px;font-weight:600;cursor:pointer">';
+
   if (ESTADO_GUARDADO) {
     setTimeout(function () {
       var faixa = document.getElementById('faixaPrevia');
-      if (faixa) {
+      if (!faixa) return;
+
+      if (estruturaDefasada()) {
+        faixa.style.background = '#8a5a00';
+        faixa.innerHTML = '⚠ Esta prévia mostra o que você já tinha feito, de uma ' +
+          '<b>versão anterior do sistema</b>. As mudanças novas (serviços, etapas, campos) ' +
+          'só aparecem depois de recomeçar. ' + botaoRecomecar + 'Ver a versão nova</button>';
+      } else {
         faixa.innerHTML = 'PRÉVIA — retomando o que você já tinha feito neste navegador. ' +
           '<b>Nada disso vai para a planilha do Drive.</b> ' +
-          '<button onclick="recomecarPrevia()" style="margin-left:10px;background:none;' +
-          'border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:5px;padding:2px 9px;' +
-          'font-size:11.5px;cursor:pointer">Recomeçar do zero</button>';
+          botaoRecomecar + 'Recomeçar do zero</button>';
       }
     }, 100);
   }
