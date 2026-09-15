@@ -255,10 +255,10 @@ semearClientesDoFomento();
       if (!faixa) return;
 
       if (estruturaDefasada()) {
-        faixa.style.background = '#8a5a00';
-        faixa.innerHTML = '⚠ Esta prévia mostra o que você já tinha feito, de uma ' +
-          '<b>versão anterior do sistema</b>. As mudanças novas (serviços, etapas, campos) ' +
-          'só aparecem depois de recomeçar. ' + botaoRecomecar + 'Ver a versão nova</button>';
+        faixa.style.background = '#1d5c3a';
+        faixa.innerHTML = 'PRÉVIA — o sistema foi atualizado e a estrutura nova ' +
+          '<b>foi acrescentada ao que você já tinha</b>: nada do que estava classificado ' +
+          'se perdeu. ' + botaoRecomecar + 'Recomeçar do zero</button>';
       } else {
         faixa.innerHTML = 'PRÉVIA — retomando o que você já tinha feito neste navegador. ' +
           '<b>Nada disso vai para a planilha do Drive.</b> ' +

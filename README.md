@@ -231,6 +231,23 @@ Há dois jeitos de uma etapa sair da conta, e eles não se confundem: **por serv
 geral, definida em *Etapas do checklist*) e **`n/a`** (decisão caso a caso, na ficha de uma
 empresa).
 
+## Atualizar uma planilha que já está em uso
+
+Quando o código passa a prever serviços, etapas ou campos novos, **abrir o painel basta**:
+a estrutura nova é acrescentada ao que já existe. Nada é renomeado nem removido —
+
+- a **classificação das empresas** continua exatamente como está;
+- os **serviços que a equipe criou** (um *Auditoria Progoiás*, por exemplo) permanecem;
+- as **etapas que já estavam em uso** seguem valendo para quem está nelas;
+- as etapas novas entram **na posição certa do fluxo**, não no fim da lista.
+
+O caso do Goiás Fomento é o exemplo: quem já estava no serviço antigo continua nele, com o
+fluxo de antes, enquanto os três caminhos novos nascem prontos ao lado. A reclassificação,
+quando fizer sentido, é decisão de quem usa — o sistema não mexe nisso sozinho.
+
+`teste/teste-atualizacao.js` reproduz exatamente esse cenário: planilha em uso, empresas
+classificadas, serviço próprio criado pela equipe — e confere que nada se perde.
+
 ## Os três caminhos do Goiás Fomento
 
 | Serviço | Quando usar | Como o checklist começa |

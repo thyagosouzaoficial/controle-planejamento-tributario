@@ -347,8 +347,10 @@ function garantirEstruturaInicial_() {
   if (_semeando) return;
   _semeando = true;
   try {
+    garantirServicosDoCodigo_();
     garantirEtapasIniciais_();
     garantirCamposIniciais_();
+    migrarFomentoParaTresCaminhos_();
   } finally {
     _semeando = false;
   }
@@ -360,24 +362,31 @@ function garantirEtapasIniciais_() {
   ETAPAS_INICIAIS.forEach(function (pacote) {
     if (servicos.indexOf(pacote.servico) < 0) return;
 
-    // ancorado no que já teve coluna: tirar o serviço de uma etapa na matriz, ou
-    // excluir uma etapa do fluxo, não pode fazer tudo ser criado de novo
+    /* ancorado no que já teve coluna: o que alguém excluiu não ressuscita, e o
+       que ainda não existe é criado — inclusive quando o fluxo ganha etapas
+       novas depois de já estar em uso */
     const usados = rotulosJaUsados_();
-    const jaCriado = pacote.etapas.some(function (def) {
-      return usados.indexOf(def.nome.toUpperCase()) >= 0;
+    const faltando = pacote.etapas.filter(function (def) {
+      return usados.indexOf(def.nome.toUpperCase()) < 0;
     });
-    if (jaCriado) return;
+    if (!faltando.length) return;
 
+    const nenhumaDoPacote = pacote.etapas.every(function (def) {
+      return usados.indexOf(def.nome.toUpperCase()) < 0;
+    });
     const ninguemConfigurou = etapas_().every(function (e) { return !(e.servicos || []).length; });
-    if (ninguemConfigurou && servicos.indexOf(pacote.fluxoOriginalPertenceA) >= 0) {
+    if (nenhumaDoPacote && ninguemConfigurou &&
+        servicos.indexOf(pacote.fluxoOriginalPertenceA) >= 0) {
       definirServicosDeVarias(etapas_().map(function (e) {
         return { id: e.id, servicos: [pacote.fluxoOriginalPertenceA] };
       }));
     }
 
-    pacote.etapas.forEach(function (def) {
+    faltando.forEach(function (def) {
       criarEtapa(def.nome, def.sigla, def.servicos || [pacote.servico]);
     });
+
+    arrumarOrdemDoPacote_(pacote);
   });
 }
 
@@ -529,6 +538,45 @@ function excluirEtapa(id, nomeConfirmado) {
   SpreadsheetApp.flush();
   escreverLog_('(checklist)', 'Etapa excluída', etapa.nome, 'arquivada na aba ' + ABA_ETAPAS_EXCLUIDAS);
   return carregarPainel();
+}
+
+/**
+ * Etapa criada entra no fim da lista. Quando um fluxo que já existia ganha
+ * etapas de abertura, elas nascem depois das que deveriam vir no fim — então
+ * o pacote é reordenado para a sequência que ele descreve, sem mexer na
+ * posição das etapas que não são dele.
+ */
+function arrumarOrdemDoPacote_(pacote) {
+  const ordemDesejada = pacote.etapas.map(function (e) { return e.nome.toUpperCase(); });
+  const todas = etapas_();
+
+  const doPacote = todas.filter(function (e) {
+    return ordemDesejada.indexOf(e.nome.toUpperCase()) >= 0;
+  });
+  if (doPacote.length < 2) return;
+
+  doPacote.sort(function (a, b) {
+    return ordemDesejada.indexOf(a.nome.toUpperCase()) -
+           ordemDesejada.indexOf(b.nome.toUpperCase());
+  });
+
+  /* as posições que o pacote já ocupa continuam sendo dele; só o conteúdo delas
+     é reorganizado na sequência certa */
+  const posicoes = todas
+    .map(function (e, i) { return { etapa: e, i: i }; })
+    .filter(function (x) { return ordemDesejada.indexOf(x.etapa.nome.toUpperCase()) >= 0; })
+    .map(function (x) { return x.i; });
+
+  const novaOrdem = todas.slice();
+  posicoes.forEach(function (posicao, i) { novaOrdem[posicao] = doPacote[i]; });
+
+  const sheet = abaEtapas_();
+  novaOrdem.forEach(function (etapa, i) {
+    sheet.getRange(linhaDaEtapa_(etapa.id), 2).setValue(i + 1);
+  });
+
+  esquecerEtapas_();
+  SpreadsheetApp.flush();
 }
 
 function renumerarEtapas_() {
@@ -1223,6 +1271,62 @@ function abaServicos_() {
   sheet.setFrozenRows(1);
   SERVICOS_PADRAO.forEach(function (nome) { sheet.appendRow([nome]); });
   return sheet;
+}
+
+/**
+ * A lista de serviços só cresce: o que a equipe já cadastrou fica, e o que o
+ * código passou a prever é acrescentado ao fim. Nada some, nada é renomeado —
+ * a classificação das empresas continua valendo exatamente como está.
+ */
+function garantirServicosDoCodigo_() {
+  const sheet = abaServicos_();
+  const existentes = listarServicos_().map(function (s) { return s.toUpperCase(); });
+  const faltando = SERVICOS_PADRAO.filter(function (nome) {
+    return existentes.indexOf(nome.toUpperCase()) < 0;
+  });
+  if (!faltando.length) return [];
+
+  faltando.forEach(function (nome) { sheet.appendRow([nome]); });
+  escreverLog_('(serviços)', 'Serviços acrescentados pela atualização', '', faltando.join(', '));
+  return faltando;
+}
+
+/**
+ * O Goiás Fomento virou três caminhos. Onde uma etapa ou um campo estava
+ * marcado com o nome antigo, os três passam a valer também — assim o que já
+ * existia continua funcionando e os caminhos novos nascem prontos.
+ */
+function migrarFomentoParaTresCaminhos_() {
+  const antigo = 'Goiás Fomento';
+  if (listarServicos_().indexOf(antigo) < 0) return;
+
+  const etapasParaAjustar = etapas_().filter(function (e) {
+    return (e.servicos || []).indexOf(antigo) >= 0 &&
+      FOMENTO_TODOS.some(function (s) { return e.servicos.indexOf(s) < 0; });
+  });
+
+  if (etapasParaAjustar.length) {
+    definirServicosDeVarias(etapasParaAjustar.map(function (e) {
+      return { id: e.id, servicos: semRepetir_(e.servicos.concat(FOMENTO_TODOS)) };
+    }));
+  }
+
+  const sheet = abaCampos_();
+  const coluna = CAMPOS_DEF.indexOf('servico') + 1;
+  campos_().forEach(function (campo) {
+    if ((campo.servicos || []).indexOf(antigo) < 0) return;
+    if (FOMENTO_TODOS.every(function (s) { return campo.servicos.indexOf(s) >= 0; })) return;
+
+    const total = sheet.getLastRow();
+    const ids = total < 2 ? [] : sheet.getRange(2, 1, total - 1, 1).getValues();
+    for (let i = 0; i < ids.length; i++) {
+      if (texto_(ids[i][0]) !== campo.id) continue;
+      sheet.getRange(i + 2, coluna)
+        .setValue(semRepetir_(campo.servicos.concat(FOMENTO_TODOS)).join(', '));
+      break;
+    }
+  });
+  esquecerCampos_();
 }
 
 function listarServicos_() {
