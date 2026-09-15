@@ -33,8 +33,23 @@ const ABA_SERVICOS = 'Servicos';
 const ABA_CAMPOS = 'Campos';
 
 /** Os serviços que a Analyze presta. A lista vive na aba `Servicos` e pode crescer. */
-const SERVICOS_PADRAO = ['Planejamento Tributário', 'Auditoria', 'Goiás Fomento',
-                         'Diagnóstico Prospecção'];
+/**
+ * O Goiás Fomento entra por três caminhos, e cada um começa de um jeito:
+ *  · Indicação    — a Goiás Fomento indica o cliente, que já quer o crédito:
+ *                   entramos em contato, pedimos a documentação e abrimos o processo.
+ *  · Sondagem     — a Goiás Fomento indica, mas ainda não se sabe se há interesse:
+ *                   primeiro é preciso falar com o cliente para descobrir.
+ *  · Busca própria— o cliente não veio de indicação: nós o procuramos e oferecemos.
+ * Do "solicitar documentação" em diante o caminho é o mesmo para os três.
+ */
+const FOMENTO_INDICACAO = 'Goiás Fomento — Indicação';
+const FOMENTO_SONDAGEM = 'Goiás Fomento — Sondagem';
+const FOMENTO_BUSCA = 'Goiás Fomento — Busca própria';
+const FOMENTO_TODOS = [FOMENTO_INDICACAO, FOMENTO_SONDAGEM, FOMENTO_BUSCA];
+
+const SERVICOS_PADRAO = ['Planejamento Tributário', 'Auditoria']
+  .concat(FOMENTO_TODOS)
+  .concat(['Diagnóstico Prospecção']);
 const FUSO = 'America/Sao_Paulo';
 
 /** Colunas do cabeçalho da empresa (1-based, como na planilha). */
@@ -126,16 +141,25 @@ const CAMPOS_ETAPA_NUMERICOS = ['ordem', 'resp', 'data', 'concluido', 'dataFinal
  */
 const ETAPAS_INICIAIS = [
   {
-    servico: 'Goiás Fomento',
+    servico: FOMENTO_INDICACAO,
+    fluxoOriginalPertenceA: 'Planejamento Tributário',
     etapas: [
-      { nome: 'Validação inicial', sigla: 'VALID' },
-      { nome: 'Cadastro com restrição', sigla: 'CADAS' },
-      { nome: 'Análise de documentos', sigla: 'ANDOC' },
-      { nome: 'Cancelado', sigla: 'CANC' },
-      { nome: 'Análise de crédito', sigla: 'ANCRE' },
-      { nome: 'Aprovado', sigla: 'APROV' }
-    ],
-    fluxoOriginalPertenceA: 'Planejamento Tributário'
+      /* o começo é diferente em cada caminho */
+      { nome: 'Contato com o cliente indicado', sigla: 'CONT', servicos: [FOMENTO_INDICACAO] },
+      { nome: 'Sondar interesse no crédito', sigla: 'SOND', servicos: [FOMENTO_SONDAGEM] },
+      { nome: 'Prospectar o cliente', sigla: 'PROSP', servicos: [FOMENTO_BUSCA] },
+      { nome: 'Oferecer o crédito', sigla: 'OFERT', servicos: [FOMENTO_BUSCA] },
+
+      /* daqui para frente é igual nos três */
+      { nome: 'Solicitar documentação do crédito', sigla: 'DOCGF', servicos: FOMENTO_TODOS },
+      { nome: 'Abertura do processo', sigla: 'ABERT', servicos: FOMENTO_TODOS },
+      { nome: 'Validação inicial', sigla: 'VALID', servicos: FOMENTO_TODOS },
+      { nome: 'Cadastro com restrição', sigla: 'CADAS', servicos: FOMENTO_TODOS },
+      { nome: 'Análise de documentos', sigla: 'ANDOC', servicos: FOMENTO_TODOS },
+      { nome: 'Cancelado', sigla: 'CANC', servicos: FOMENTO_TODOS },
+      { nome: 'Análise de crédito', sigla: 'ANCRE', servicos: FOMENTO_TODOS },
+      { nome: 'Aprovado', sigla: 'APROV', servicos: FOMENTO_TODOS }
+    ]
   }
 ];
 
@@ -352,7 +376,7 @@ function garantirEtapasIniciais_() {
     }
 
     pacote.etapas.forEach(function (def) {
-      criarEtapa(def.nome, def.sigla, [pacote.servico]);
+      criarEtapa(def.nome, def.sigla, def.servicos || [pacote.servico]);
     });
   });
 }
@@ -686,20 +710,20 @@ const TIPOS_DE_CAMPO = ['texto', 'texto longo', 'data', 'número', 'dinheiro', '
  * inventar colunas fixas, a aba `Campos` diz quais existem e a quem pertencem.
  */
 const CAMPOS_INICIAIS = [
-  { rotulo: 'Município', tipo: 'texto', servico: 'Goiás Fomento' },
-  { rotulo: 'Nome fantasia', tipo: 'texto', servico: 'Goiás Fomento' },
-  { rotulo: 'Protocolo anterior', tipo: 'texto', servico: 'Goiás Fomento' },
-  { rotulo: 'Telefone', tipo: 'texto', servico: 'Goiás Fomento' },
-  { rotulo: 'Celulares', tipo: 'texto', servico: 'Goiás Fomento' },
-  { rotulo: 'E-mails', tipo: 'texto', servico: 'Goiás Fomento' },
-  { rotulo: 'Proprietários', tipo: 'texto', servico: 'Goiás Fomento' },
-  { rotulo: 'Data da ligação de oferta', tipo: 'data', servico: 'Goiás Fomento' },
-  { rotulo: 'Quem ligou', tipo: 'texto', servico: 'Goiás Fomento' },
-  { rotulo: 'Resultado do contato', tipo: 'lista', servico: 'Goiás Fomento',
+  { rotulo: 'Município', tipo: 'texto', servico: FOMENTO_TODOS },
+  { rotulo: 'Nome fantasia', tipo: 'texto', servico: FOMENTO_TODOS },
+  { rotulo: 'Protocolo anterior', tipo: 'texto', servico: FOMENTO_TODOS },
+  { rotulo: 'Telefone', tipo: 'texto', servico: FOMENTO_TODOS },
+  { rotulo: 'Celulares', tipo: 'texto', servico: FOMENTO_TODOS },
+  { rotulo: 'E-mails', tipo: 'texto', servico: FOMENTO_TODOS },
+  { rotulo: 'Proprietários', tipo: 'texto', servico: FOMENTO_TODOS },
+  { rotulo: 'Data da ligação de oferta', tipo: 'data', servico: FOMENTO_TODOS },
+  { rotulo: 'Quem ligou', tipo: 'texto', servico: FOMENTO_TODOS },
+  { rotulo: 'Resultado do contato', tipo: 'lista', servico: FOMENTO_TODOS,
     opcoes: 'Interessado, Vai pensar, Sem interesse, Não atendeu, Retornar depois' },
-  { rotulo: 'Linha de crédito', tipo: 'texto', servico: 'Goiás Fomento' },
-  { rotulo: 'Valor pretendido', tipo: 'dinheiro', servico: 'Goiás Fomento' },
-  { rotulo: 'Observações do contato', tipo: 'texto longo', servico: 'Goiás Fomento' },
+  { rotulo: 'Linha de crédito', tipo: 'texto', servico: FOMENTO_TODOS },
+  { rotulo: 'Valor pretendido', tipo: 'dinheiro', servico: FOMENTO_TODOS },
+  { rotulo: 'Observações do contato', tipo: 'texto longo', servico: FOMENTO_TODOS },
 
   { rotulo: 'Município', tipo: 'texto', servico: 'Diagnóstico Prospecção' },
   { rotulo: 'Capital social', tipo: 'dinheiro', servico: 'Diagnóstico Prospecção' },
@@ -727,6 +751,7 @@ function campos_() {
           ? Number(l[i] || 0)
           : texto_(l[i]);
       });
+      campo.servicos = lerListaDeServicos_(campo.servico);
       campo.listaDeOpcoes = campo.opcoes
         ? campo.opcoes.split(/[;,]/).map(function (o) { return o.trim(); })
             .filter(function (o) { return o !== ''; })
@@ -783,11 +808,19 @@ function criarCampo(rotulo, tipo, servico, opcoes) {
     throw new Error('Tipo desconhecido: ' + tipoLimpo);
   }
 
-  const doServico = String(servico || '').trim();
-  if (doServico && listarServicos_().indexOf(doServico) < 0) {
-    throw new Error('"' + doServico + '" não está na lista de serviços.');
+  /* um campo pode servir a mais de um serviço — o Goiás Fomento, por exemplo,
+     é o mesmo cadastro entrando por três caminhos diferentes */
+  const disponiveis = listarServicos_();
+  const lista = semRepetir_((Array.isArray(servico) ? servico : [servico])
+    .map(function (s) { return String(s || '').trim(); })
+    .filter(function (s) { return s !== ''; }));
+
+  const desconhecido = lista.filter(function (s) { return disponiveis.indexOf(s) < 0; });
+  if (desconhecido.length) {
+    throw new Error('"' + desconhecido.join(', ') + '" não está na lista de serviços.');
   }
 
+  const doServico = lista.join(', ');
   const repetido = campos_().some(function (c) {
     return c.rotulo.toUpperCase() === limpo.toUpperCase() && c.servico === doServico;
   });
@@ -849,10 +882,13 @@ function garantirCamposIniciais_() {
   const usados = rotulosJaUsados_();
 
   CAMPOS_INICIAIS.forEach(function (def) {
-    if (servicos.indexOf(def.servico) < 0) return;
+    const doCampo = Array.isArray(def.servico) ? def.servico : [def.servico];
+    const existem = doCampo.filter(function (s) { return servicos.indexOf(s) >= 0; });
+    if (!existem.length) return;
+
     // um campo excluído deixa a coluna marcada: não se recria o que alguém tirou
     if (usados.indexOf(def.rotulo.toUpperCase()) >= 0) return;
-    criarCampo(def.rotulo, def.tipo, def.servico, def.opcoes || '');
+    criarCampo(def.rotulo, def.tipo, existem, def.opcoes || '');
   });
 }
 
@@ -1104,7 +1140,8 @@ function importarClientes(texto, servico) {
         return;
       }
       const campo = campos_().filter(function (c) {
-        return c.rotulo === rotulo && (c.servico === doServico || !c.servico);
+        return c.rotulo === rotulo &&
+          (!c.servicos.length || c.servicos.indexOf(doServico) >= 0);
       })[0];
       if (campo && completarSeVazio_(linha, campo.coluna, cliente.campos[rotulo], rotulo)) {
         mexeu = true;
@@ -1353,7 +1390,7 @@ function montarEmpresa_(linhaNumero, valores) {
       const bruto = v(campo.coluna);
       return {
         id: campo.id, rotulo: campo.rotulo, tipo: campo.tipo, servico: campo.servico,
-        opcoes: campo.listaDeOpcoes,
+        servicos: campo.servicos, opcoes: campo.listaDeOpcoes,
         valor: campo.tipo === 'data' ? paraISO_(bruto)
           : (campo.tipo === 'sim/não' ? paraBool_(bruto) : texto_(bruto))
       };
@@ -1527,7 +1564,7 @@ function carregarPainel() {
     servicos: listarServicos_(),
     camposDeServico: campos_().map(function (c) {
       return { id: c.id, rotulo: c.rotulo, tipo: c.tipo, servico: c.servico,
-               opcoes: c.listaDeOpcoes };
+               servicos: c.servicos, opcoes: c.listaDeOpcoes };
     }),
     tiposDeCampo: TIPOS_DE_CAMPO,
     regimes: REGIMES,

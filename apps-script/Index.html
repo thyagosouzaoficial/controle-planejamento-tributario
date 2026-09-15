@@ -1696,7 +1696,8 @@
   /** Os campos que valem para esta empresa: os do serviço dela, mais os comuns. */
   function camposDaEmpresa(e) {
     return (e.campos || []).filter(function (c) {
-      return !c.servico || c.servico === e.servico;
+      var lista = c.servicos || (c.servico ? [c.servico] : []);
+      return !lista.length || lista.indexOf(e.servico) >= 0;
     });
   }
 
@@ -2262,9 +2263,7 @@
             '<td><span class="etiqueta">' + escapar(c.tipo) + '</span>' +
               (c.opcoes && c.opcoes.length
                 ? '<div class="sub">' + escapar(c.opcoes.join(' · ')) + '</div>' : '') + '</td>' +
-            '<td>' + (c.servico
-              ? '<span class="servico-tag">' + escapar(c.servico) + '</span>'
-              : '<span class="servico-tag todos">todos os serviços</span>') + '</td>' +
+            '<td>' + tagsDeServico(c.servicos || (c.servico ? [c.servico] : [])) + '</td>' +
             '<td class="acoes"><button class="btn btn-perigo" onclick="pedirExclusaoCampo(\'' +
               c.id + '\')">Excluir</button></td></tr>';
         }).join('')

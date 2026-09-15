@@ -156,9 +156,16 @@ ${codigo}
 /* google.script.run simulado, com o mesmo encadeamento de handlers. */
 function semearClientesDoFomento() {
   if (!SEMEAR_CLIENTES || ESTADO_GUARDADO) return;
+
+  /* o nome do serviço vem do próprio painel: as constantes do Codigo.gs vivem
+     dentro do BACKEND e não alcançam este escopo */
+  var servicos = BACKEND.carregarPainel().servicos || [];
+  var doFomento = servicos.filter(function (n) { return n.indexOf('Fomento') >= 0; })[0];
+  var deProspeccao = servicos.filter(function (n) { return n.indexOf('Prospec') >= 0; })[0];
+
   try {
-    BACKEND.importarClientes(LISTA_DE_EXEMPLO, 'Goiás Fomento');
-    BACKEND.importarClientes(LISTA_DE_PROSPECCAO, 'Diagnóstico Prospecção');
+    if (doFomento) BACKEND.importarClientes(LISTA_DE_EXEMPLO, doFomento);
+    if (deProspeccao) BACKEND.importarClientes(LISTA_DE_PROSPECCAO, deProspeccao);
     guardarEstado();
   } catch (erro) {
     console.warn('não consegui semear os clientes: ' + erro.message);

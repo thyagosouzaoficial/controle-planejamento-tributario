@@ -63,7 +63,7 @@ roda dentro do Google Sheets, que não tem modo escuro.
 | **Histórico** | Aba `Log` criada automaticamente: quem mudou o quê, quando, de que valor para qual. |
 | **Exportar Excel** | Botão no topo: baixa a lista em `.xlsx` de verdade, com uma coluna por etapa (concluída / pendente / não se aplica / outro serviço) e uma por campo de serviço. Na tela *Empresas* leva o que está filtrado; na *Visão geral*, a carteira inteira. O arquivo é montado pelo próprio app — não cria nada no Drive nem chama serviço externo. |
 | **Importar / atualizar lista** | Cola a lista como ela chega e o app cadastra no serviço escolhido. Mostra o que entendeu **antes** de gravar. Quem já está na planilha — reconhecido pelo **CNPJ ou pelo nome** — não vira linha nova: os campos em branco são completados com o que veio na lista, e o que já estava preenchido fica como está. Lê município, nome fantasia, protocolo, telefones, e-mails, proprietários, regime, capital social, receita bruta, data da análise e responsável. |
-| **Fluxo próprio do Goiás Fomento** | Seis etapas criadas sozinhas na primeira abertura: *Validação inicial · Cadastro com restrição · Análise de documentos · Cancelado · Análise de crédito · Aprovado*. Ao mesmo tempo, as 12 etapas originais passam a pertencer ao **Planejamento Tributário**, para que as empresas do fomento não herdem um checklist que não é o delas. |
+| **Goiás Fomento em três caminhos** | O crédito chega de três formas, e cada uma começa diferente — por isso são três serviços, cada um com o seu checklist. Ao mesmo tempo, as 12 etapas originais passam a pertencer ao **Planejamento Tributário**, para que as empresas do fomento não herdem um checklist que não é o delas. |
 | **Um checklist, dividido por serviço** | A lista de etapas é uma só. Em *Etapas do checklist* há uma **matriz etapa × serviço**: marque as caixas e a mesma etapa serve a quantos serviços precisar. Cada etapa pode valer para **todos** os serviços (o normal) ou só para alguns. A empresa conta apenas as etapas do serviço que contratou; as demais aparecem marcadas como *de outro serviço*, fora da conta. Escolhendo um serviço no filtro, a tabela passa a mostrar só o checklist daquele serviço — cabeçalho, legenda e trilhas juntos. |
 | **Etapa que não se aplica** | O checklist é o mesmo para todas, mas nem toda etapa cabe em todo caso. O botão `n/a` na ficha tira a etapa **daquela empresa** da conta do percentual: ela fica riscada, sai do destaque de "etapa da vez" e o percentual passa a ser calculado só sobre as que se aplicam. |
 | **Campos próprios de cada serviço** | Informações que só um serviço pede. O Goiás Fomento já vem com os do cadastro e do contato ativo — *Município*, *Nome fantasia*, *Protocolo anterior*, *Telefone*, *Celulares*, *E-mails*, *Proprietários*, *Data da ligação de oferta*, *Quem ligou*, *Resultado do contato*, *Linha de crédito*, *Valor pretendido* e *Observações do contato*. Em **Campos por serviço** dá para criar outros (texto, data, número, dinheiro, lista de opções, sim/não), para qualquer serviço ou para todos. |
@@ -230,6 +230,21 @@ acima das etapas; uma de Planejamento não vê esse bloco.
 Há dois jeitos de uma etapa sair da conta, e eles não se confundem: **por serviço** (regra
 geral, definida em *Etapas do checklist*) e **`n/a`** (decisão caso a caso, na ficha de uma
 empresa).
+
+## Os três caminhos do Goiás Fomento
+
+| Serviço | Quando usar | Como o checklist começa |
+|---|---|---|
+| **Goiás Fomento — Indicação** | a Goiás Fomento indica o cliente e ele **já quer** o crédito | Contato com o cliente indicado |
+| **Goiás Fomento — Sondagem** | a Goiás Fomento indica, mas ainda **não se sabe** se há interesse | Sondar interesse no crédito |
+| **Goiás Fomento — Busca própria** | o cliente **não veio de indicação**: nós o procuramos | Prospectar o cliente → Oferecer o crédito |
+
+Do **Solicitar documentação do crédito** em diante o caminho é o mesmo nos três: abertura do
+processo, validação inicial, cadastro com restrição, análise de documentos, cancelado,
+análise de crédito e aprovado.
+
+Os campos do fomento (município, contatos, proprietários, dados da ligação, linha de crédito,
+valor pretendido) valem para os três — é o mesmo cadastro entrando por portas diferentes.
 
 ## Sobre "Cancelado" e "Aprovado"
 

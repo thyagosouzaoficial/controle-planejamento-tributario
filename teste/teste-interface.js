@@ -693,9 +693,12 @@ function faseDivisaoPorServico(totalAntes) {
   ok('a matriz tem uma coluna por serviço, mais "Todos"',
     colunas.length === (dados.servicos || []).length + 3,
     colunas.length + ' colunas para ' + (dados.servicos || []).length + ' serviços');
-  ok('a matriz marca cada etapa onde ela pertence',
-    document.querySelectorAll('.matriz td.marca input:checked').length === total,
-    document.querySelectorAll('.matriz td.marca input:checked').length + ' marcas para ' + total + ' etapas');
+  var linhasSemMarca = 0;
+  document.querySelectorAll('.matriz tbody tr').forEach(function (tr) {
+    if (!tr.querySelectorAll('td.marca input:checked').length) linhasSemMarca++;
+  });
+  ok('toda etapa da matriz está marcada em algum lugar', linhasSemMarca === 0,
+    linhasSemMarca + ' etapas sem marca nenhuma');
   ok('o cabeçalho conta as etapas de cada serviço',
     colunas[2].querySelector('small').textContent.slice(-7) === ' etapas' &&
     parseInt(colunas[2].querySelector('small').textContent, 10) > 0,
@@ -756,16 +759,19 @@ function faseDivisaoPorServico(totalAntes) {
       document.querySelector('#corpo .trilha').querySelectorAll('.marco').length === daAuditoria,
       document.querySelector('#corpo .trilha').querySelectorAll('.marco').length + '');
 
-    seletor.value = 'Goiás Fomento';
+    var outroServico = (dados.servicos || []).filter(function (n) {
+      return n.indexOf('Fomento') >= 0;
+    })[0];
+    seletor.value = outroServico;
     seletor.dispatchEvent(new Event('change'));
     var doFomento = (dados.etapas || []).filter(function (e) {
-      return !e.servicos.length || e.servicos.indexOf('Goiás Fomento') >= 0;
+      return !e.servicos.length || e.servicos.indexOf(outroServico) >= 0;
     }).length;
     ok('outro serviço, outro checklist',
       document.querySelectorAll('#thChecklist .trilha-topo span').length === doFomento,
-      doFomento + ' etapas no Goiás Fomento');
-    ok('o fluxo do Goiás Fomento começa pela validação inicial',
-      document.querySelectorAll('#guiaEtapas .item')[0].textContent.indexOf('Validação inicial') > 0,
+      doFomento + ' etapas em ' + outroServico);
+    ok('e o fluxo dele começa pela etapa daquele caminho',
+      document.querySelectorAll('#guiaEtapas .item')[0].textContent.indexOf('Contato com o cliente') > 0,
       document.querySelectorAll('#guiaEtapas .item')[0].textContent);
 
     limparFiltro('servico');
@@ -803,9 +809,9 @@ function faseCamposDeServico(totalAntes) {
   ok('a tela de campos lista os cadastrados',
     document.querySelectorAll('.matriz tbody tr').length === cadastrados,
     document.querySelectorAll('.matriz tbody tr').length + ' de ' + cadastrados);
-  ok('os campos do Goiás Fomento vieram prontos',
+  ok('os campos do fomento vieram prontos',
     (dados.camposDeServico || []).some(function (c) {
-      return c.rotulo === 'Data da ligação de oferta' && c.servico === 'Goiás Fomento';
+      return c.rotulo === 'Data da ligação de oferta' && (c.servicos || []).length === 3;
     }),
     (dados.camposDeServico || []).map(function (c) { return c.rotulo; }).join(', '));
   ok('a lista de opções aparece no cadastro',
@@ -829,7 +835,9 @@ function faseCamposDeServico(totalAntes) {
     document.querySelectorAll('#gavetaConteudo .campo').forEach(function (c) {
       if (c.textContent.indexOf('Serviço contratado') === 0) seletor = c.querySelector('select');
     });
-    seletor.value = 'Goiás Fomento';
+    seletor.value = (dados.servicos || []).filter(function (n) {
+      return n.indexOf('Fomento') >= 0;
+    })[0];
     seletor.dispatchEvent(new Event('change'));
 
     setTimeout(function () {
@@ -838,10 +846,14 @@ function faseCamposDeServico(totalAntes) {
         blocos.push(h.textContent);
       });
       ok('a ficha ganhou o bloco do serviço',
-        blocos.indexOf('Informações de Goiás Fomento') >= 0, blocos.join(' | '));
+        blocos.some(function (b) { return b.indexOf('Fomento') > 0; }), blocos.join(' | '));
 
+      var servicoDaFicha = (dados.servicos || []).filter(function (n) {
+        return n.indexOf('Fomento') >= 0;
+      })[0];
       var doServico = (dados.camposDeServico || []).filter(function (c) {
-        return c.servico === 'Goiás Fomento' || !c.servico;
+        var lista = c.servicos || [];
+        return !lista.length || lista.indexOf(servicoDaFicha) >= 0;
       }).length;
       var bloco = null;
       document.querySelectorAll('#gavetaConteudo .bloco').forEach(function (b) {
@@ -915,14 +927,19 @@ function faseImportacao(totalAntes) {
   var antesDeImportar = dados.empresas.length;
   /* uma empresa já foi posta em Goiás Fomento na fase anterior: guardo quem
      era, para contar só o que a importação trouxe */
+  var servicoAlvo = (dados.servicos || []).filter(function (n) {
+    return n.indexOf('Fomento') >= 0;
+  })[0];
   var fomentoAntes = dados.empresas
-    .filter(function (e) { return e.servico === 'Goiás Fomento'; })
+    .filter(function (e) { return e.servico === servicoAlvo; })
     .map(function (e) { return e.nome; });
   abrirImportacao();
   ok('a tela de importação abriu', !!document.getElementById('textoImportacao'));
-  ok('o serviço vem no Goiás Fomento',
-    document.getElementById('servicoImportacao').value === 'Goiás Fomento',
-    document.getElementById('servicoImportacao').value);
+  var servicoDoFomento = (dados.servicos || []).filter(function (n) {
+    return n.indexOf('Fomento') >= 0;
+  })[0];
+  document.getElementById('servicoImportacao').value = servicoDoFomento;
+  ok('há um serviço de fomento para importar', !!servicoDoFomento, servicoDoFomento);
   ok('o botão de cadastrar começa travado',
     document.getElementById('btnImportar').disabled === true);
 
@@ -960,10 +977,10 @@ function faseImportacao(totalAntes) {
         document.getElementById('previaImportacao').textContent.indexOf('Pronto') >= 0);
 
       var importadas = dados.empresas.filter(function (e) {
-        return e.servico === 'Goiás Fomento' && fomentoAntes.indexOf(e.nome) < 0;
+        return e.servico === servicoAlvo && fomentoAntes.indexOf(e.nome) < 0;
       });
       var viggma = importadas[0];
-      ok('entraram no serviço do Goiás Fomento', importadas.length === naLista,
+      ok('entraram no serviço de fomento escolhido', importadas.length === naLista,
         importadas.length + ' de ' + naLista);
       ok('com o CNPJ', !!viggma && viggma.cnpjs.length === 1 &&
         viggma.cnpjs[0].formatado.length === 18,

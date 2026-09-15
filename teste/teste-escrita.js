@@ -29,6 +29,7 @@ vm.runInContext(
   'salvarCabecalho, salvarEtapaCampo, alternarEtapa, alternarDocumento, criarEmpresa, lerLog, ' +
   'salvarCelula, excluirEmpresa, listarExcluidas, criarEtapa, renomearEtapa, excluirEtapa, acharEtapaParaTeste, ' +
   'definirServicosDaEtapa, definirServicosDeVarias, etapaValePara_, campos_, criarCampo, ' +
+  'FOMENTO_INDICACAO, FOMENTO_SONDAGEM, FOMENTO_BUSCA, FOMENTO_TODOS, ' +
   'excluirCampo, salvarCampoDoServico, CAMPOS_INICIAIS, TIPOS_DE_CAMPO, ETAPAS_INICIAIS, ' +
   'interpretarListaDeClientes_, conferirListaDeClientes, importarClientes, desfazerImportacao, ' +
   'exportarParaExcel, montarExportacao_, ' +
@@ -325,18 +326,44 @@ conferir('empresa sem etapa aplicável conta como pronta', na.progresso === 1, n
 conferir('e a etapa atual vira Concluído', na.etapaAtual === 'Concluído', na.etapaAtual);
 API.ETAPAS.forEach(function (et) { API.definirNaoAplica(LINHA_NA, et.id, false); });
 
-console.log('\n=== 10d2. O fluxo próprio do Goiás Fomento ===');
+console.log('\n=== 10d2. Os três caminhos do Goiás Fomento ===');
 const comFluxos = API.carregarPainel();
 const pacote = API.ETAPAS_INICIAIS[0];
-const doFomento = comFluxos.etapas.filter((e) => (e.servicos || []).indexOf('Goiás Fomento') >= 0);
+const doFomento = comFluxos.etapas.filter((e) =>
+  (e.servicos || []).some((s) => API.FOMENTO_TODOS.indexOf(s) >= 0));
 
-conferir('as 6 etapas do Goiás Fomento foram criadas',
+conferir('as etapas do fomento foram criadas',
   doFomento.length === pacote.etapas.length,
-  doFomento.length + ': ' + doFomento.map((e) => e.nome).join(', '));
+  doFomento.length + ' de ' + pacote.etapas.length);
 conferir('na ordem que o fluxo pede',
   JSON.stringify(doFomento.map((e) => e.nome)) ===
   JSON.stringify(pacote.etapas.map((e) => e.nome)),
   doFomento.map((e) => e.nome).join(' → '));
+
+/* cada caminho começa de um jeito e converge para o mesmo fim */
+const fluxos = {};
+API.FOMENTO_TODOS.forEach((sv) => {
+  fluxos[sv] = comFluxos.etapas
+    .filter((e) => !e.servicos.length || e.servicos.indexOf(sv) >= 0)
+    .map((e) => e.nome);
+});
+conferir('a indicação começa pelo contato com o cliente',
+  fluxos[API.FOMENTO_INDICACAO][0] === 'Contato com o cliente indicado',
+  fluxos[API.FOMENTO_INDICACAO][0]);
+conferir('a sondagem começa perguntando do interesse',
+  fluxos[API.FOMENTO_SONDAGEM][0] === 'Sondar interesse no crédito',
+  fluxos[API.FOMENTO_SONDAGEM][0]);
+conferir('a busca própria começa prospectando e oferecendo',
+  fluxos[API.FOMENTO_BUSCA][0] === 'Prospectar o cliente' &&
+  fluxos[API.FOMENTO_BUSCA][1] === 'Oferecer o crédito',
+  fluxos[API.FOMENTO_BUSCA].slice(0, 2).join(' → '));
+conferir('os três convergem no mesmo fim',
+  API.FOMENTO_TODOS.every((sv) =>
+    fluxos[sv].slice(-8).join('|') === fluxos[API.FOMENTO_INDICACAO].slice(-8).join('|')),
+  'o trecho comum difere entre os caminhos');
+conferir('a busca própria tem uma etapa a mais que os outros dois',
+  fluxos[API.FOMENTO_BUSCA].length === fluxos[API.FOMENTO_INDICACAO].length + 1,
+  Object.keys(fluxos).map((k) => fluxos[k].length).join(' / '));
 conferir('as 12 originais passaram a ser do planejamento tributário',
   comFluxos.etapas.filter((e) => JSON.stringify(e.servicos) ===
     JSON.stringify(['Planejamento Tributário'])).length === 12,
@@ -345,13 +372,15 @@ conferir('as 12 originais passaram a ser do planejamento tributário',
 conferir('cada etapa nova ganhou sigla própria',
   new Set(comFluxos.etapas.map((e) => e.sigla)).size === comFluxos.etapas.length);
 
-const empresaFomento = API.salvarCabecalho(12, 'servico', 'Goiás Fomento');
-conferir('empresa de Goiás Fomento conta só as 6 etapas dela',
-  empresaFomento.etapasAplicaveis === 6, empresaFomento.etapasAplicaveis);
+const empresaFomento = API.salvarCabecalho(12, 'servico', API.FOMENTO_INDICACAO);
+conferir('empresa do fomento conta só as etapas do caminho dela',
+  empresaFomento.etapasAplicaveis === fluxos[API.FOMENTO_INDICACAO].length,
+  empresaFomento.etapasAplicaveis + ' vs ' + fluxos[API.FOMENTO_INDICACAO].length);
 conferir('e a etapa atual é a primeira do fluxo dela',
-  empresaFomento.etapaAtual === 'Validação inicial', empresaFomento.etapaAtual);
-conferir('as etapas do planejamento aparecem como de outro serviço',
-  empresaFomento.etapas.filter((e) => e.foraDoServico).length === 12,
+  empresaFomento.etapaAtual === 'Contato com o cliente indicado', empresaFomento.etapaAtual);
+conferir('as etapas dos outros caminhos ficam de fora',
+  empresaFomento.etapas.filter((e) => e.foraDoServico).length ===
+  comFluxos.etapas.length - fluxos[API.FOMENTO_INDICACAO].length,
   empresaFomento.etapas.filter((e) => e.foraDoServico).length + '');
 
 const empresaPlanejamento = API.carregarPainel().empresas
@@ -369,10 +398,17 @@ conferir('aba Campos criada', !!ambiente.abas.Campos);
 conferir('os campos de cada serviço foram semeados',
   painelCampos.camposDeServico.length === API.CAMPOS_INICIAIS.length,
   painelCampos.camposDeServico.length + ' de ' + API.CAMPOS_INICIAIS.length);
-conferir('cada campo semeado pertence ao serviço que o pediu',
+conferir('cada campo semeado pertence aos serviços que o pediram',
   painelCampos.camposDeServico.every((c) =>
-    API.CAMPOS_INICIAIS.some((d) => d.rotulo === c.rotulo && d.servico === c.servico)),
-  painelCampos.camposDeServico.map((c) => c.rotulo + '→' + c.servico).join(', '));
+    API.CAMPOS_INICIAIS.some((d) => {
+      const pedidos = Array.isArray(d.servico) ? d.servico : [d.servico];
+      return d.rotulo === c.rotulo &&
+        JSON.stringify(pedidos) === JSON.stringify(c.servicos);
+    })),
+  painelCampos.camposDeServico.map((c) => c.rotulo).join(', '));
+conferir('os campos do fomento valem para os três caminhos',
+  painelCampos.camposDeServico.filter((c) => c.servicos.length === 3).length >= 10,
+  painelCampos.camposDeServico.filter((c) => c.servicos.length === 3).length + ' campos');
 const campoLigacao = painelCampos.camposDeServico
   .filter((c) => c.rotulo === 'Data da ligação de oferta')[0];
 conferir('a ligação de oferta é um campo de data',
@@ -385,22 +421,23 @@ conferir('o resultado do contato é uma lista com opções',
 conferir('os dados da lista de clientes viraram campos',
   ['Município', 'Nome fantasia', 'Protocolo anterior', 'Telefone', 'Celulares',
    'E-mails', 'Proprietários'].every((r) =>
-    painelCampos.camposDeServico.some((c) => c.rotulo === r && c.servico === 'Goiás Fomento')),
+    painelCampos.camposDeServico.some((c) => c.rotulo === r &&
+      (c.servicos || []).indexOf(API.FOMENTO_INDICACAO) >= 0)),
   painelCampos.camposDeServico.map((c) => c.rotulo).join(', '));
 conferir('as colunas foram criadas com o rótulo no cabeçalho',
   API.campos_().every((c) => String(celula(2, c.coluna)) === c.rotulo),
   API.campos_().map((c) => c.coluna).join(','));
-conferir('e com o serviço na linha de baixo',
+conferir('e com os serviços na linha de baixo',
   API.campos_().every((c) => String(celula(3, c.coluna)) === c.servico),
-  API.campos_().map((c) => celula(3, c.coluna)).join(', '));
+  API.campos_().map((c) => String(celula(3, c.coluna)).slice(0, 18)).join(' | '));
 conferir('nenhuma coluna de campo pisa em coluna de etapa',
   API.campos_().every((c) => c.coluna > 75), API.campos_().map((c) => c.coluna).join(','));
 
-recusa('campo sem nome', () => API.criarCampo('  ', 'texto', 'Goiás Fomento'));
-recusa('tipo inventado', () => API.criarCampo('Teste', 'planilha', 'Goiás Fomento'));
+recusa('campo sem nome', () => API.criarCampo('  ', 'texto', API.FOMENTO_INDICACAO));
+recusa('tipo inventado', () => API.criarCampo('Teste', 'planilha', API.FOMENTO_INDICACAO));
 recusa('serviço fora da lista', () => API.criarCampo('Teste', 'texto', 'Inexistente'));
-recusa('campo repetido no mesmo serviço',
-  () => API.criarCampo('Quem ligou', 'texto', 'Goiás Fomento'));
+recusa('campo repetido nos mesmos serviços',
+  () => API.criarCampo('Quem ligou', 'texto', API.FOMENTO_TODOS));
 
 const comComum = API.criarCampo('Indicado por', 'texto', '');
 conferir('campo sem serviço vale para todos',
@@ -411,9 +448,10 @@ conferir('mesmo nome em serviço diferente é permitido',
 
 /* preencher os campos de uma empresa */
 const LINHA_GF = 12;
-API.salvarCabecalho(LINHA_GF, 'servico', 'Goiás Fomento');
+API.salvarCabecalho(LINHA_GF, 'servico', API.FOMENTO_INDICACAO);
 const campoData = API.campos_().filter((c) => c.rotulo === 'Data da ligação de oferta')[0];
-const campoQuem = API.campos_().filter((c) => c.rotulo === 'Quem ligou' && c.servico === 'Goiás Fomento')[0];
+const campoQuem = API.campos_().filter((c) => c.rotulo === 'Quem ligou' &&
+  c.servicos.indexOf(API.FOMENTO_INDICACAO) >= 0)[0];
 const campoLista = API.campos_().filter((c) => c.rotulo === 'Resultado do contato')[0];
 
 let gf = API.salvarCampoDoServico(LINHA_GF, campoData.id, '2026-09-01');
@@ -436,7 +474,7 @@ conferir('a empresa carrega os valores dos campos',
   gf.campos.length === API.campos_().length, gf.campos.length + ' campos');
 conferir('empresa de outro serviço não tem valor nos campos do Goiás Fomento',
   API.carregarEmpresa(LINHA).campos
-    .filter((c) => c.servico === 'Goiás Fomento').every((c) => !c.valor));
+    .filter((c) => c.servico === API.FOMENTO_INDICACAO).every((c) => !c.valor));
 
 /* excluir campo */
 recusa('nome errado na confirmação', () => API.excluirCampo(campoQuem.id, 'outro nome'));
@@ -450,7 +488,7 @@ conferir('o valor que estava lá não se perdeu',
   celula(LINHA_GF, campoQuem.coluna) === 'Thyago Souza');
 conferir('e o campo excluído não volta sozinho no próximo carregamento',
   !API.carregarPainel().camposDeServico.some((c) => c.rotulo === 'Quem ligou' &&
-    c.servico === 'Goiás Fomento'),
+    c.servico === API.FOMENTO_INDICACAO),
   'o campo ressuscitou');
 
 console.log('\n=== 10f. Importar a lista de clientes ===');
@@ -508,9 +546,9 @@ conferir('conferir não grava nada',
 const antesDaImportacao = API.carregarPainel().empresas.length;
 recusa('importar sem serviço', () => API.importarClientes(listaBruta, ''));
 recusa('importar para serviço inexistente', () => API.importarClientes(listaBruta, 'Nada'));
-recusa('texto sem nenhum cliente', () => API.importarClientes('bom dia', 'Goiás Fomento'));
+recusa('texto sem nenhum cliente', () => API.importarClientes('bom dia', API.FOMENTO_INDICACAO));
 
-const importado = API.importarClientes(listaBruta, 'Goiás Fomento');
+const importado = API.importarClientes(listaBruta, API.FOMENTO_INDICACAO);
 conferir('todas as empresas da lista entraram',
   importado.empresas.length === antesDaImportacao + QUANTOS_NA_LISTA,
   importado.empresas.length + ' vs ' + (antesDaImportacao + QUANTOS_NA_LISTA));
@@ -520,7 +558,8 @@ conferir('o retorno diz o que foi feito',
   JSON.stringify(importado.importacao));
 
 const novaViggma = importado.empresas.filter((x) => x.nome === lidos[0].nome)[0];
-conferir('com o serviço certo', novaViggma.servico === 'Goiás Fomento', novaViggma.servico);
+conferir('com o serviço certo', novaViggma.servico === API.FOMENTO_INDICACAO,
+  novaViggma.servico);
 conferir('com o CNPJ formatado e válido',
   novaViggma.cnpjs.length === 1 && novaViggma.cnpjs[0].numero === lidos[0].cnpj,
   JSON.stringify(novaViggma.cnpjs));
@@ -535,13 +574,13 @@ conferir('com os proprietários preenchidos',
   lidos[0].campos['Proprietários']);
 conferir('sem nenhuma etapa concluída: ainda não foram contatados',
   novaViggma.etapas.every((e) => !e.concluido), 'alguma etapa veio marcada');
-conferir('e já no fluxo do Goiás Fomento',
-  novaViggma.etapaAtual === 'Validação inicial', novaViggma.etapaAtual);
+conferir('e já no fluxo daquele caminho do fomento',
+  novaViggma.etapaAtual === 'Contato com o cliente indicado', novaViggma.etapaAtual);
 conferir('sem data de ligação, porque ninguém ligou ainda',
   !novaViggma.campos.filter((c) => c.rotulo === 'Data da ligação de oferta')[0].valor);
 
 /* importar de novo não duplica nem mexe no que já está preenchido */
-const segundaVez = API.importarClientes(listaBruta, 'Goiás Fomento');
+const segundaVez = API.importarClientes(listaBruta, API.FOMENTO_INDICACAO);
 conferir('reimportar não duplica ninguém',
   segundaVez.empresas.length === importado.empresas.length,
   segundaVez.empresas.length + ' vs ' + importado.empresas.length);
@@ -549,7 +588,7 @@ conferir('e não altera nada, porque já está tudo preenchido',
   segundaVez.importacao.criados.length === 0 && segundaVez.importacao.atualizados.length === 0,
   JSON.stringify(segundaVez.importacao));
 conferir('a conferência passa a marcar os já cadastrados naquele serviço',
-  API.conferirListaDeClientes(listaBruta, 'Goiás Fomento').clientes.every((c) => c.jaCadastrado));
+  API.conferirListaDeClientes(listaBruta, API.FOMENTO_INDICACAO).clientes.every((c) => c.jaCadastrado));
 conferir('e em outro serviço eles aparecem como novos, não como repetidos',
   API.conferirListaDeClientes(listaBruta, 'Auditoria').clientes.every((c) => !c.jaCadastrado));
 conferir('a importação ficou no log',
@@ -594,7 +633,7 @@ conferir('elas foram arquivadas, não apagadas',
 conferir('o desfazer ficou no log',
   API.lerLog(20).some((l) => l.oque === 'Importação desfeita'));
 conferir('e dá para importar de novo depois de desfazer',
-  API.importarClientes(listaBruta, 'Goiás Fomento').importacao.criados.length ===
+  API.importarClientes(listaBruta, API.FOMENTO_INDICACAO).importacao.criados.length ===
   QUANTOS_NA_LISTA);
 
 console.log('\n=== 10g. Atualizar as empresas de prospecção ===');
