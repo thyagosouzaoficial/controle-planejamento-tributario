@@ -1,5 +1,5 @@
 /**
- * Controle de Planejamento Tributário — Azuos / Analyze
+ * Controle de Tarefas e Serviços Analyze
  *
  * A planilha "Controle Planejamento Tribuario" continua sendo o banco de dados.
  * Este código só lê e escreve nas mesmas células, para que quem preferir a
@@ -1415,7 +1415,7 @@ function garantirColunaCNPJ_() {
 
 function onOpen() {
   SpreadsheetApp.getUi()
-    .createMenu('📋 Planejamento')
+    .createMenu('📋 Tarefas e Serviços')
     .addItem('Abrir painel', 'abrirPainel')
     .addToUi();
 }
@@ -1424,12 +1424,12 @@ function abrirPainel() {
   const html = HtmlService.createHtmlOutputFromFile('Index')
     .setWidth(1600)
     .setHeight(1000);
-  SpreadsheetApp.getUi().showModalDialog(html, 'Controle de Planejamento Tributário');
+  SpreadsheetApp.getUi().showModalDialog(html, 'Controle de Tarefas e Serviços Analyze');
 }
 
 function doGet() {
   return HtmlService.createHtmlOutputFromFile('Index')
-    .setTitle('Controle de Planejamento Tributário')
+    .setTitle('Controle de Tarefas e Serviços Analyze')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
 }
 
@@ -2147,7 +2147,7 @@ function montarXlsx_(cabecalho, corpo, nomeDaAba) {
     'xmlns:dc="http://purl.org/dc/elements/1.1/" ' +
     'xmlns:dcterms="http://purl.org/dc/terms/" ' +
     'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">' +
-    '<dc:title>Controle de Planejamento Tributário</dc:title>' +
+    '<dc:title>Controle de Tarefas e Serviços Analyze</dc:title>' +
     '<dc:creator>Azuos Contábil</dc:creator>' +
     '<cp:lastModifiedBy>Azuos Contábil</cp:lastModifiedBy>' +
     '<dcterms:created xsi:type="dcterms:W3CDTF">' +
@@ -2158,7 +2158,7 @@ function montarXlsx_(cabecalho, corpo, nomeDaAba) {
     '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
     '<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties" ' +
     'xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes">' +
-    '<Application>Controle de Planejamento Tributário</Application>' +
+    '<Application>Controle de Tarefas e Serviços Analyze</Application>' +
     '</Properties>';
 
   const relacoesDoWorkbook =
@@ -2216,7 +2216,7 @@ function exportarParaExcel(linhas) {
   if (!dados.quantas) throw new Error('Não há empresas para exportar com esses filtros.');
 
   const carimbo = Utilities.formatDate(new Date(), FUSO, 'yyyy-MM-dd_HH-mm');
-  const nomeArquivo = 'Controle_Planejamento_' + carimbo + '.xlsx';
+  const nomeArquivo = 'Controle_Tarefas_e_Servicos_' + carimbo + '.xlsx';
   const arquivo = montarXlsx_(dados.cabecalho, dados.corpo, 'Empresas');
 
   escreverLog_('(exportação)', 'Exportado para Excel', '',

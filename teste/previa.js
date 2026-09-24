@@ -171,6 +171,15 @@ ${codigo}
 function semearClientesDoFomento() {
   if (!SEMEAR_CLIENTES || ESTADO_GUARDADO) return;
 
+  /* nem sobre classificação que já exista na planilha de origem: semear só faz
+     sentido numa prévia realmente vazia */
+  var jaClassificadas = (BACKEND.carregarPainel().empresas || [])
+    .filter(function (e) { return e.servico; }).length;
+  if (jaClassificadas) {
+    console.warn('não semeei: já há ' + jaClassificadas + ' empresas classificadas');
+    return;
+  }
+
   /* o nome do serviço vem do próprio painel: as constantes do Codigo.gs vivem
      dentro do BACKEND e não alcançam este escopo */
   var servicos = BACKEND.carregarPainel().servicos || [];

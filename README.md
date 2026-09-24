@@ -1,7 +1,8 @@
-# Controle de Planejamento Tributário — Azuos / Analyze
+# Controle de Tarefas e Serviços Analyze
 
-Interface para a planilha **Controle Planejamento Tribuario**, rodando dentro do
-Google Drive como aplicativo do Google Apps Script.
+Acompanhamento das tarefas e dos serviços da Analyze — planejamento tributário,
+auditoria, Goiás Fomento e diagnóstico — rodando dentro do Google Drive como aplicativo do
+Google Apps Script, sobre a planilha que a equipe já usa.
 
 A planilha continua sendo o banco de dados. O app lê e grava nas **mesmas células**,
 então quem preferir continuar mexendo na planilha pode — nada é duplicado e nada é
@@ -99,7 +100,7 @@ hora, nunca versionado.
 3. **+ › HTML**, nomeie exatamente `Index`, apague o conteúdo e cole o de [`apps-script/Index.html`](apps-script/Index.html).
 4. ⚙️ **Configurações do projeto** → marque *Mostrar arquivo de manifesto "appsscript.json"*.
    Abra o `appsscript.json` que aparecer e cole o de [`apps-script/appsscript.json`](apps-script/appsscript.json).
-5. Salve. Recarregue a planilha: aparece o menu **📋 Planejamento › Abrir painel**.
+5. Salve. Recarregue a planilha: aparece o menu **📋 Tarefas e Serviços › Abrir painel**.
    Na primeira execução o Google pede autorização — é o seu próprio script acessando a sua planilha.
 
 ### Para a equipe usar por link, sem abrir a planilha

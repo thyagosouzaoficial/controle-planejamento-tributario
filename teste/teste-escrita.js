@@ -1051,8 +1051,9 @@ console.log('\n=== 15c. Exportar para Excel ===');
 const exportado = API.exportarParaExcel();
 const painelAtual2 = API.carregarPainel();
 
-conferir('o arquivo tem nome com data', /^Controle_Planejamento_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}\.xlsx$/
-  .test(exportado.nome), exportado.nome);
+conferir('o arquivo tem nome com data',
+  /^Controle_Tarefas_e_Servicos_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}\.xlsx$/.test(exportado.nome),
+  exportado.nome);
 conferir('exporta todas as empresas', exportado.quantas === painelAtual2.empresas.length,
   exportado.quantas + ' vs ' + painelAtual2.empresas.length);
 

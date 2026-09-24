@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8"><title>Resgatar estado da prévia</title>
+<style>
+ body{font:16px/1.6 -apple-system,"Segoe UI",Roboto,Arial,sans-serif;margin:0;padding:34px;
+      background:#f4f6f9;color:#16202b}
+ h1{font-size:20px;margin:0 0 6px}
+ .cx{background:#fff;border:1px solid #dfe5ec;border-radius:8px;padding:18px 22px;
+     margin:18px 0;max-width:720px}
+ .grande{font-size:32px;font-weight:700;line-height:1.1}
+ .ok{color:#1d7a4c} .nao{color:#c0392b}
+ table{border-collapse:collapse;width:100%;margin-top:8px}
+ td{padding:5px 10px 5px 0;border-bottom:1px solid #eef1f5}
+ td.n{text-align:right;font-weight:650;font-variant-numeric:tabular-nums;width:70px}
+</style></head><body>
+<h1>Resgate do estado da prévia</h1>
+<div id="saida"></div>
+<script>
+var alvo = document.getElementById('saida');
+var cru = null;
+try { cru = localStorage.getItem('previa-planejamento-v1'); } catch (e) {}
+
+if (!cru) {
+  alvo.innerHTML = '<div class="cx"><div class="grande nao">Nada guardado</div>' +
+    '<p>Este navegador não tem estado da prévia. Se você usou outro navegador ' +
+    '(Safari, Edge, Firefox) ou uma janela anônima, abra este arquivo lá.</p></div>';
+} else {
+  var d = JSON.parse(cru);
+  var empresas = (d.Controle || []).slice(3).filter(function (l) { return String(l[1] || '').trim(); });
+  var porServico = {};
+  empresas.forEach(function (l) {
+    var s = String(l[73] || '').trim() || '(sem serviço)';
+    porServico[s] = (porServico[s] || 0) + 1;
+  });
+  var linhas = Object.keys(porServico)
+    .sort(function (a, b) { return porServico[b] - porServico[a]; })
+    .map(function (s) { return '<tr><td>' + s + '</td><td class="n">' + porServico[s] + '</td></tr>'; })
+    .join('');
+
+  alvo.innerHTML = '<div class="cx"><div class="grande ok">' + empresas.length + ' empresas</div>' +
+    '<p>encontradas neste navegador. Classificação:</p><table>' + linhas + '</table></div>' +
+    '<div class="cx"><p><b>O arquivo <code>estado-previa.json</code> foi baixado.</b> ' +
+    'Ele está na sua pasta de Downloads — é só me avisar que eu leio e reponho tudo.</p></div>';
+
+  /* salva o estado em arquivo, para poder ser restaurado */
+  var blob = new Blob([cru], { type: 'application/json' });
+  var url = URL.createObjectURL(blob);
+  var link = document.createElement('a');
+  link.href = url;
+  link.download = 'estado-previa.json';
+  document.body.appendChild(link);
+  link.click();
+  setTimeout(function () { URL.revokeObjectURL(url); }, 5000);
+}
+</script></body></html>

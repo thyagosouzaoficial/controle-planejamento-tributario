@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8"><title>Diagnóstico da prévia</title>
+<style>
+ body{font:15px/1.5 -apple-system,"Segoe UI",Roboto,Arial,sans-serif;margin:0;padding:28px;
+      background:#f4f6f9;color:#16202b}
+ h1{font-size:19px;margin:0 0 4px}
+ .sub{color:#5c6b7a;font-size:13px;margin-bottom:20px}
+ .cx{background:#fff;border:1px solid #dfe5ec;border-radius:8px;padding:16px 20px;margin-bottom:14px;max-width:760px}
+ .cx h2{font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:#5c6b7a;margin:0 0 10px}
+ table{border-collapse:collapse;width:100%}
+ td{padding:4px 10px 4px 0;font-size:14px;border-bottom:1px solid #eef1f5}
+ td.n{text-align:right;font-variant-numeric:tabular-nums;font-weight:650;width:60px}
+ .grande{font-size:30px;font-weight:700}
+ .nada{color:#c0392b;font-weight:600}
+ .ok{color:#1d7a4c;font-weight:600}
+</style></head><body>
+<h1>Diagnóstico da prévia</h1>
+<div class="sub">O que está guardado neste navegador agora. Mande um print disto.</div>
+<div id="saida"></div>
+<script>
+function bloco(titulo, corpo){
+  return '<div class="cx"><h2>'+titulo+'</h2>'+corpo+'</div>';
+}
+var saida = '';
+var cru = null;
+try { cru = localStorage.getItem('previa-planejamento-v1'); } catch(e) {}
+
+if (!cru) {
+  saida += bloco('Estado guardado',
+    '<p class="nada">Não há nada guardado neste navegador.</p>' +
+    '<p>Ou o estado foi apagado, ou a prévia nunca foi usada aqui, ' +
+    'ou você está num navegador diferente do que usou antes.</p>');
+} else {
+  var d = JSON.parse(cru);
+  var abas = Object.keys(d);
+  var controle = d.Controle || [];
+  var empresas = controle.slice(3).filter(function(l){ return String(l[1]||'').trim(); });
+
+  saida += bloco('Resumo',
+    '<div class="grande">' + empresas.length + ' empresas</div>' +
+    '<div class="sub">guardadas neste navegador · ' + (cru.length/1024).toFixed(0) + ' KB</div>');
+
+  var porServico = {};
+  empresas.forEach(function(l){
+    var s = String(l[73]||'').trim() || '(sem serviço)';
+    porServico[s] = (porServico[s]||0) + 1;
+  });
+  var linhas = Object.keys(porServico).sort(function(a,b){return porServico[b]-porServico[a];})
+    .map(function(s){ return '<tr><td>'+s+'</td><td class="n">'+porServico[s]+'</td></tr>'; }).join('');
+  saida += bloco('Classificação por serviço', '<table>'+linhas+'</table>');
+
+  var servicos = (d.Servicos||[]).slice(1).map(function(l){return String(l[0]||'').trim();})
+    .filter(function(n){return n;});
+  saida += bloco('Serviços cadastrados (aba Servicos)',
+    servicos.length ? '<table>'+servicos.map(function(n){return '<tr><td>'+n+'</td></tr>';}).join('')+'</table>'
+                    : '<p class="nada">nenhum</p>');
+
+  var etapas = (d.Etapas||[]).slice(1).map(function(l){return String(l[2]||'').trim();})
+    .filter(function(n){return n;});
+  saida += bloco('Etapas do checklist (' + etapas.length + ')',
+    '<table>'+etapas.map(function(n){return '<tr><td>'+n+'</td></tr>';}).join('')+'</table>');
+
+  saida += bloco('Abas guardadas', '<p>' + abas.join(' · ') + '</p>');
+}
+document.getElementById('saida').innerHTML = saida;
+</script></body></html>
